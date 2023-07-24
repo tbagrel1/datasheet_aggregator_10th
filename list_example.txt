@@ -1,0 +1,38 @@
+1250pts - Bulldozer (1030 points)
+Space Marines
+Dark Angels
+Strike Force (2000 points)
+Gladius Task Force
+
+
+CHARACTER
+
+Astraeus (85 points)
+  • 1x Bolt pistol
+    1x Crozius arcanum
+
+
+OTHER DATASHEETS
+
+Kratos (230 points)
+  • 1x Assault Sergeant with Jump Pack
+    • 1x Astartes chainsword
+      1x Bolt pistol
+  • 9x Assault Marine with Jump Pack
+    • 4x Astartes chainsword
+      4x Bolt pistol
+
+Primaris Captain (55 points)
+  • 1x Bolt pistol
+    1x Close combat weapon
+    1x Heavy bolter
+    1x Twin boltgun
+
+Belial (115 points)
+  • 1x Inceptor Sergeant
+    • 1x Assault bolters
+      1x Close combat weapon
+  • 2x Inceptor
+    • 2x Assault bolters
+      2x Close combat weapon
+

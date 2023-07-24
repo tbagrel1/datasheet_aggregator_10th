@@ -1,0 +1,11 @@
+associated_file: data/pdf/Space Marines.pdf
+includes:
+  - 'Imperial Armour: Astartes.yaml'
+  - 'Horus Heresy Legends: Adeptus Astartes.yaml'
+army_rules:
+  Adeptus Astartes: [[1, 1]]
+detachment_rules:
+  Gladius Task Force: [[2, 5]]
+datasheets:
+  PRIMARIS CAPTAIN: [[7, 8]]
+  CAPTAIN IN GRAVIS ARMOUR: [[9, 10]]
