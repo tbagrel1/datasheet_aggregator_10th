@@ -1,0 +1,9 @@
+associated_file: 'data/pdf/Space Marines -- Dark Angels.pdf'
+includes:
+  - 'Space Marines.yaml'
+army_rules:
+detachment_rules:
+  Unforgiven Task Force: [[1, 1], [3, 5]]
+datasheets:
+  AZRAEL: 7
+  BELIAL: 9

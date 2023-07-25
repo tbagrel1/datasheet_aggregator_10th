@@ -27,6 +27,18 @@ Primaris Captain (55 points)
     1x Close combat weapon
     1x Heavy bolter
     1x Twin boltgun
+  • 1x Bolt pistol
+    1x Close combat weapon
+    1x Heavy bolter
+    1x Twin boltgun
+  • 1x Bolt pistol
+    1x Close combat weapon
+    1x Heavy bolter
+    1x Twin boltgun
+  • 1x Bolt pistol
+    1x Close combat weapon
+    1x Heavy bolter
+    1x Twin boltgun
 
 Belial (115 points)
   • 1x Inceptor Sergeant
@@ -35,4 +47,3 @@ Belial (115 points)
   • 2x Inceptor
     • 2x Assault bolters
       2x Close combat weapon
-
