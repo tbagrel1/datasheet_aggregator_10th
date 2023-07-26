@@ -1,0 +1,91 @@
+Kill Them All (1250 points)
+Chaos Space Marines
+Strike Force (2000 points)
+Slaves to Darkness
+
+
+CHARACTER
+
+Chaos Lord in Terminator Armour (115 points)
+  • Mark of Chaos: Slaanesh
+  • Warlord
+  • 1x Chainfist
+    1x Combi-weapon
+  • Enhancement: Intoxicating Elixir
+
+Haarken Worldclaimer (120 points)
+  • 1x Helspear
+    1x Herald’s Talon
+
+
+DEDICATED TRANSPORT
+
+Chaos Rhino (85 points)
+  • Mark of Chaos: Nurgle
+  • 1x Armoured tracks
+    1x Combi-bolter
+    1x Combi-weapon
+    1x Havoc launcher
+
+
+OTHER DATASHEETS
+
+Chaos Terminator Squad (195 points)
+  • Mark of Chaos: Slaanesh
+  • 1x Terminator Champion
+    • 1x Chainfist
+      1x Combi-bolter
+  • 4x Chaos Terminator
+    • 2x Combi-bolter
+      1x Paired accursed weapons
+      3x Power fist
+      1x Reaper autocannon
+
+Chaos Vindicator (210 points)
+  • Mark of Chaos: Chaos Undivided
+  • 1x Armoured tracks
+    1x Demolisher cannon
+
+Forgefiend (165 points)
+  • Mark of Chaos: Nurgle
+  • 1x Armoured limbs
+    2x Ectoplasma cannon
+    1x Ectoplasma cannon
+
+Noise Marines (85 points)
+  • 1x Noise Champion
+    • 1x Chaos Icon
+      1x Close combat weapon
+      1x Doom siren
+      1x Power fist
+      1x Sonic blaster
+  • 4x Noise Marine
+    • 1x Blastmaster
+      4x Bolt pistol
+      4x Close combat weapon
+      3x Sonic blaster
+
+Noise Marines (85 points)
+  • 1x Noise Champion
+    • 1x Chaos Icon
+      1x Close combat weapon
+      1x Doom siren
+      1x Power fist
+      1x Sonic blaster
+  • 4x Noise Marine
+    • 1x Blastmaster
+      4x Bolt pistol
+      4x Close combat weapon
+      3x Sonic blaster
+
+Raptors (190 points)
+  • Mark of Chaos: Chaos Undivided
+  • 1x Raptor Champion
+    • 1x Plasma pistol
+      1x Power fist
+  • 9x Raptor
+    • 7x Astartes chainsword
+      5x Bolt pistol
+      2x Close combat weapon
+      2x Meltagun
+      2x Plasma pistol

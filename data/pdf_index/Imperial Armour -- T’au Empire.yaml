@@ -1,0 +1,14 @@
+associated_file: data/pdf/Imperial Armour -- T’au Empire.pdf
+includes:
+army_rules:
+detachment_rules:
+datasheets:
+  R’VARNA BATTLESUIT: 1
+  Y’VAHRA BATTLESUIT: 3
+  TETRAS: 5
+  REMORA STEALTH DRONES: 7
+  TA’UNAR SUPREMACY ARMOUR: 9
+  BARRACUDA: 11
+  TIGER SHARK: 13
+  AX-1-0 TIGER SHARK: 15
+  MANTA: 17

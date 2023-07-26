@@ -1,0 +1,82 @@
+1250pts - Stand the line (1245 points)
+Space Marines
+Dark Angels
+Strike Force (2000 points)
+Gladius Task Force
+
+
+CHARACTER
+
+Captain in Gravis Armour (105 points)
+  • Warlord
+  • 1x Boltstorm gauntlet
+    1x Power fist
+    1x Relic fist
+  • Enhancement: Artificer Armour
+
+Primaris Lieutenant (100 points)
+  • 1x Heavy Bolt Pistol
+    1x Master-crafted bolt rifle
+    1x Power fist
+  • Enhancement: Bolter Discipline
+
+
+BATTLELINE
+
+Heavy Intercessor Squad (110 points)
+  • 1x Heavy Intercessor Sergeant
+    • 1x Bolt pistol
+      1x Close combat weapon
+      1x Heavy bolt rifle
+  • 4x Heavy Intercessor
+    • 4x Bolt pistol
+      4x Close combat weapon
+      3x Heavy bolt rifle
+      1x Heavy bolter
+
+
+OTHER DATASHEETS
+
+Aggressor Squad (220 points)
+  • 1x Aggressor Sergeant
+    • 1x Auto boltstorm gauntlets
+      1x Fragstorm grenade launcher
+      1x Power fist
+  • 5x Aggressor
+    • 5x Auto boltstorm gauntlets
+      5x Fragstorm grenade launcher
+      5x Power fist
+
+Eradicator Squad (190 points)
+  • 1x Eradicator Sergeant
+    • 1x Bolt pistol
+      1x Close combat weapon
+      1x Melta rifle
+  • 5x Eradicator
+    • 5x Bolt pistol
+      5x Close combat weapon
+      3x Melta rifle
+      2x Multi-melta
+
+Firestrike Servo-turrets (80 points)
+  • 1x Close combat weapon
+    1x Twin Firestrike las-talon
+
+Inceptor Squad (230 points)
+  • 1x Inceptor Sergeant
+    • 1x Close combat weapon
+      1x Plasma exterminators
+  • 5x Inceptor
+    • 5x Close combat weapon
+      5x Plasma exterminators
+
+Sternguard Veteran Squad (210 points)
+  • 1x Sternguard Veteran Sergeant
+    • 1x Close combat weapon
+      1x Sternguard bolt pistol
+      1x Sternguard bolt rifle
+  • 9x Sternguard Veteran
+    • 9x Close combat weapon
+      9x Sternguard bolt pistol
+      7x Sternguard bolt rifle
+      2x Sternguard heavy bolter

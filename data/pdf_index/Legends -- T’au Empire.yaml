@@ -1,0 +1,14 @@
+associated_file: data/pdf/Legends -- T’au Empire.pdf
+includes:
+army_rules:
+detachment_rules:
+datasheets:
+  ORCA DROPSHIP: 1
+  HEAVY GUN DRONES: 3
+  GREAT KNARLOC: 5
+  TX42 PIRANHA: 7
+  KNARLOC RIDERS: 9
+  SHAS'O R'ALAI: 11
+  XV9 HAZARD BATTLESUITS: 13
+  REMOTE SENSOR TOWER: 15
+  DRONE SENTRY TURRET: 17
