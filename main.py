@@ -49,16 +49,18 @@ class Datasheet:
         return self.__str__()
 
 ARMY_SPEC_RE = (
-    r"^(?P<list_name>[^\n]+?) \((?P<total_points>[0-9]+) points\)\n"
+    r"^(?P<army_header>(?P<list_name>[^\n]+?) \((?P<total_points>[0-9]+) points\)\n"
     r"(?P<raw_army_rule>[^\n]+?(?:\n[^\n]+?)?)\n"
     r"(?P<game_format>[^\n]+? \((?P<max_points>[0-9]+) points\))\n"
-    r"(?P<detachment_rule>[^\n]+?)\n"
+    r"(?P<detachment_rule>[^\n]+?))\n"
+    r"\n\n"
+    r"(?P<rest>CHARACTER\n\n(?:.*?\n)+$)"
 )
 
 UNIT_RE = (
     r"(?P<unit_name>[^\n]+?) \((?P<unit_points>[0-9]+) points\)\n"
     r"(?P<wargear>(?:  [^\n]+?\n)+)"
-    r"\n"
+    r"(?:\n|$)"
 )
 
 PDF_INDEX_DIR = os.path.join("data", "pdf_index")
@@ -83,8 +85,10 @@ ARMY_COMPACT_W = 200
 
 LEADING_RATIO = 1.2
 PTS_RATIO = 2.3
-
+SPLIT_HEADER_REST = 0.9
 MARGIN_RATIO = 0.1
+EXTRA_MARGIN = 0.3
+ARMY_FONT_SIZE = 18
 
 def iround(x):
     return int(round(x))
@@ -94,11 +98,11 @@ def fuse_group_into(group, units):
         units.append(group[0])
         return
     total_points = sum(u.points for u in group)
+    z = lambda l: ["  • " + l[0]] + ["    " + e for e in l[1:]]
     merged_full_text_lines = "\n".join(
-        [f"{len(group)} x {group[0].name} ({total_points} points)"] +
-        ["  " + l for u in group for l in u.full_text.split("\n") if l] +
-        [""]
-    )
+        [f"{len(group)} u. of {group[0].name} ({total_points} points)\n"] +
+        [l for u in group for l in z(u.full_text.split("\n")) if l]
+    ).strip()
     units.append(
         Unit(
         name=group[0].name,
@@ -107,42 +111,42 @@ def fuse_group_into(group, units):
         full_text=merged_full_text_lines
     ))
 
-def arrange_in_two(text, sep, lines_limit):
-    groups = text.split(sep)
+def arrange_in_two(text, sep_p1, sep_p2, lines_limit):
+    groups = [[l for l in (sep_p2 + g).split("\n") if l] for g in text.split(sep_p1 + sep_p2) if g]
     l1 = []
     l2 = []
     l1_full = False
     l2_full = False
+    c_sep_p1 = len(sep_p1[1:].split("\n")) - 1
     c1 = 0
     c2 = 0
     for g in groups:
-        if g.strip():
-            pass
         if not l1_full:
             if not l1:
-                l1.append(g)
-                c1 += len(g).split("\n")
-                continue
-            new_nb = len((sep + g).split("\n"))
-            if c1 + new_nb <= lines_limit:
-                l1.append(sep + g)
-                c1 += new_nb
+                g[0] = g[0][len(sep_p2):]  # cut extra useless delimiter
+                l1.extend(g)
+                c1 += len(g)
             else:
-                k = len((sep.lstrip("\n") + g).split("\n"))
-                print(f"{c1}/{lines_limit} lines filled, putting the next {k}({new_nb}) on the next column")
-                l1_full = True
-                l2.append((sep.lstrip("\n") + g))
-                c2 += k
+                if c1 + c_sep_p1 + len(g) <= lines_limit:
+                    g[0] = sep_p1[1:] + g[0]
+                    l1.extend(g)
+                    c1 += c_sep_p1 + len(g)
+                else:
+                    print(f"{c1}/{lines_limit} lines filled, putting the next {len(g)}({c_sep_p1 + len(g)}) on the next column")
+                    l1_full = True
+                    l2.extend(g)
+                    c2 += len(g)
         else:
-            new_nb = len((sep + g).split("\n"))
-            if not l2_full and c2 + new_nb > lines_limit:
-                print(f"Warning: overflowing text: {g}...")
+            if not l2_full and c2 + c_sep_p1 + len(g) > lines_limit:
+                m = "\n".join(g)
+                print(f"Warning: overflowing text: {repr(m)}...")
                 l2_full = True
-            l2.append(g)
-            c2 += new_nb
-    return sep.join(l1), sep.join(l2)
+            g[0] = sep_p1[1:] + g[0]
+            l2.extend(g)
+            c2 += c_sep_p1 + len(g)
+    return "\n".join(l1), "\n".join(l2)
 
-def add_annot(desired_width, desired_height, annot_font_size, annot_font_face, content, sep, page, ref_box, offset_x, offset_y, extra_margin = 0.0):
+def add_annot(desired_width, desired_height, annot_font_size, annot_font_face, content, sep_p1, sep_p2, page, ref_box, offset_x, offset_y, extra_margin = 0.0):
     leading = LEADING_RATIO * annot_font_size
     packet = BytesIO()
     # create a new PDF with Reportlab
@@ -155,16 +159,32 @@ def add_annot(desired_width, desired_height, annot_font_size, annot_font_face, c
     #can.rect(0, 0, canvas_width, canvas_height)
     to = can.beginText(extra_margin * annot_font_size, canvas_height - (1 + (max(0, extra_margin - 0.2))) * annot_font_size)
     to.setFont(annot_font_face, annot_font_size, leading)
-    nb_lines_in_one_column = int(math.floor(canvas_height / (leading * 0.87)))
-    l1, l2 = arrange_in_two(content, sep, nb_lines_in_one_column)
-    to.textLines(l1)
+    nb_lines_in_one_column = int(math.floor(canvas_height / leading))
+    l1, l2 = arrange_in_two(content, sep_p1, sep_p2, nb_lines_in_one_column)
+    for line in l1.split("\n"):
+        line = line.rstrip()
+        if line and line[-1] == ")":
+            to.setFont(annot_font_face + "-Bold", annot_font_size, leading)
+            to.textLine(line)
+            to.setFont(annot_font_face, annot_font_size, leading)
+        else:
+            to.textLine(line)
+    # to.textLines(l1, trim=0)
     can.drawText(to)
     if l2:
         can.rect(canvas_width / 2 - annot_font_size, 0, 0, canvas_height)
         to2 = can.beginText(canvas_width // 2 + annot_font_size, canvas_height - (1 + (max(0, extra_margin - 0.2))) * annot_font_size)
         to2.setFont(annot_font_face, annot_font_size)
         to2.setLeading(leading)
-        to2.textLines(l2)
+        for line in l2.split("\n"):
+            line = line.rstrip()
+            if line and line[-1] == ")":
+                to2.setFont(annot_font_face + "-Bold", annot_font_size, leading)
+                to2.textLine(line)
+                to2.setFont(annot_font_face, annot_font_size, leading)
+            else:
+                to2.textLine(line)
+        # to2.textLines(l2, trim=0)
         can.drawText(to2)
     can.save()
     packet.seek(0)
@@ -209,7 +229,6 @@ def main(input_path, output_path, with_army_rule, with_detachment_rule, with_uni
     army_spec_match = re.search(ARMY_SPEC_RE, list_content)
     if army_spec_match is None:
         raise Exception("Army spec doesn't match the expected format.")
-    army_spec_full_text = army_spec_match.group(0)
     list_name = army_spec_match.group("list_name")
     total_points = int(army_spec_match.group("total_points"))
     raw_army_rule = army_spec_match.group("raw_army_rule")
@@ -217,17 +236,19 @@ def main(input_path, output_path, with_army_rule, with_detachment_rule, with_uni
     game_format = army_spec_match.group("game_format")
     max_points = int(army_spec_match.group("max_points"))
     detachment_rule_name = army_spec_match.group("detachment_rule")
+    army_header = army_spec_match.group("army_header")
+    rest = army_spec_match.group("rest")
     print(f"Found army of '{army_name_try}' with {total_points}/{max_points}!")
 
     units = []
     group = []
     group_id = None
-    for match in re.finditer(UNIT_RE, list_content):
+    for match in re.finditer(UNIT_RE, rest):
         current = Unit(
             name=match.group("unit_name"),
             id=match.group("unit_name").strip().upper(),
             points=int(match.group("unit_points")),
-            full_text=match.group(0)
+            full_text=match.group(0).strip()
         )
         if current.id != group_id and group_id is not None:
             fuse_group_into(group, units)
@@ -276,9 +297,12 @@ def main(input_path, output_path, with_army_rule, with_detachment_rule, with_uni
         current_pages += 1
         
         desired_width = iround((1 - 2 * MARGIN_RATIO) * ref_box.width)
-        desired_height = iround(ref_box.height - 2 * MARGIN_RATIO * ref_box.width)
-        
-        add_annot(desired_width, desired_height, annot_font_size, annot_font_face, list_content, "\n\n", output_pdf.get_page(current_pages-1), ref_box, iround(MARGIN_RATIO * ref_box.width), iround(ref_box.height - MARGIN_RATIO * ref_box.width - desired_height))
+        desired_height = iround((1 - SPLIT_HEADER_REST) * ref_box.height)
+
+        add_annot(desired_width, desired_height, ARMY_FONT_SIZE, annot_font_face, army_header, "\n", "", output_pdf.get_page(current_pages-1), ref_box, iround(MARGIN_RATIO * ref_box.width), iround(ref_box.height - MARGIN_RATIO * ref_box.width - desired_height))
+
+        desired_height = iround(SPLIT_HEADER_REST * ref_box.height - 2 * MARGIN_RATIO * ref_box.width)
+        add_annot(desired_width, desired_height, annot_font_size, annot_font_face, rest, "\n\n", "", output_pdf.get_page(current_pages-1), ref_box, iround(MARGIN_RATIO * ref_box.width), iround(SPLIT_HEADER_REST * ref_box.height - MARGIN_RATIO * ref_box.width - desired_height))
 
     if with_army_rule:
         print(f"Adding '{army_rule.id}' army rules to the output PDF...")
@@ -286,7 +310,7 @@ def main(input_path, output_path, with_army_rule, with_detachment_rule, with_uni
             output_pdf.append(fileobj=army_rule.pdf, pages=(page_range[0]-1, page_range[1]))
         current_pages += page_range[1] - (page_range[0]-1)
         if with_army_annot and not booklet_mode:
-            add_annot(ARMY_COMPACT_W, ARMY_COMPACT_H, annot_font_size, annot_font_face, army_spec_full_text, "\n", output_pdf.get_page(0), ref_box, ARMY_COMPACT_X, ARMY_COMPACT_Y, extra_margin=0.3)
+            add_annot(ARMY_COMPACT_W, ARMY_COMPACT_H, annot_font_size, annot_font_face, army_header, "\n", "", output_pdf.get_page(0), ref_box, ARMY_COMPACT_X, ARMY_COMPACT_Y, extra_margin=EXTRA_MARGIN)
     if with_detachment_rule:
         print(f"Adding '{detachment_rule.id}' detachment rules to the output PDF...")
         for page_range in detachment_rule.page_ranges:
@@ -317,7 +341,7 @@ def main(input_path, output_path, with_army_rule, with_detachment_rule, with_uni
                 datasheet_page, Transformation().scale(ref_box.width / datasheet_page.mediabox.width).translate(0, ref_box.height // 2), over=False, expand=False
             )
             if with_unit_annot:
-                add_annot(annot_wt, annot_ht, annot_font_size, annot_font_face, datasheet.extra_text, "\n", output_pdf.get_page(current_pages-1), ref_box, annot_xt, annot_yt, extra_margin=0.3)
+                add_annot(annot_wt, annot_ht, annot_font_size, annot_font_face, datasheet.extra_text, "\n", "  • ", output_pdf.get_page(current_pages-1), ref_box, annot_xt, annot_yt, extra_margin=0.3)
             prev_datasheet_id = datasheet.id
             next_is_top = False
         else:
@@ -327,7 +351,7 @@ def main(input_path, output_path, with_army_rule, with_detachment_rule, with_uni
                 datasheet_page, Transformation().scale(ref_box.width / datasheet_page.mediabox.width).translate(0, 0), over=True, expand=False
             )
             if with_unit_annot and datasheet.id != prev_datasheet_id:
-                add_annot(annot_wb, annot_hb, annot_font_size, annot_font_face, datasheet.extra_text, "\n", output_pdf.get_page(current_pages-1), ref_box, annot_xb, annot_yb, extra_margin=0.3)
+                add_annot(annot_wb, annot_hb, annot_font_size, annot_font_face, datasheet.extra_text, "\n", "  • ", output_pdf.get_page(current_pages-1), ref_box, annot_xb, annot_yb, extra_margin=0.3)
             prev_datasheet_id = datasheet.id
             next_is_top = True
 
