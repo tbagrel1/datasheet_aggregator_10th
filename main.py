@@ -3,6 +3,12 @@ import re
 import os
 import yaml
 import math
+import sys
+import tkinter as tk
+from tkinter import filedialog as fd
+from tkinter import ttk
+from tkinter import messagebox
+from tkinter.scrolledtext import ScrolledText
 from pypdf import Transformation, PdfReader, PdfWriter, PageObject
 from io import BytesIO
 from reportlab.pdfgen import canvas
@@ -63,7 +69,7 @@ ARMY_SPEC_RE = (
 
 UNIT_RE = (
     r"(?P<unit_name>[^\n]+?) \((?P<unit_points>[0-9]+) points\)\n"
-    r"(?P<wargear>(?:  [^\n]+?\n)+)"
+    r"(?P<wargear>(?:  [^\n]+?(?:\n|$))+)"
     r"(?:\n|$)"
 )
 
@@ -203,8 +209,8 @@ def add_annot(page: PageObject, text_content: str, pos_params: dict[str, float],
             annotation, Transformation().scale(1.0 / PDFPTS_RATIO).translate(pos_params["x"], pos_params["y"]), over=True, expand=False
         )
 
-def load_rec_index(army_index_path: str, army_rules: dict[str, Rule], detachment_rules: dict[str, Rule], full_extra_pages: list[Rule], half_extra_pages: list[Datasheet], datasheets: dict[str, Datasheet]) -> None:
-    print(f"Loading '{army_index_path}'...")
+def load_rec_index(army_index_path: str, army_rules: dict[str, Rule], detachment_rules: dict[str, Rule], full_extra_pages: list[Rule], half_extra_pages: list[Datasheet], datasheets: dict[str, Datasheet], status_function) -> None:
+    status_function(f"Loading '{army_index_path}'...")
     with open(army_index_path, "r", encoding="utf-8") as army_index_file:
         content = yaml.load(army_index_file, yaml.Loader)
     army_pdf = PdfReader(content["associated_file"])
@@ -224,7 +230,7 @@ def load_rec_index(army_index_path: str, army_rules: dict[str, Rule], detachment
     if content["includes"]:
         for include in content["includes"]:
             include_path = os.path.join(PDF_INDEX_DIR, include)
-            load_rec_index(include_path, army_rules, detachment_rules, full_extra_pages, half_extra_pages, datasheets)
+            load_rec_index(include_path, army_rules, detachment_rules, full_extra_pages, half_extra_pages, datasheets, status_function)
 
 
 def convert_color(hexstring: str) -> tuple[float, float, float]:
@@ -257,7 +263,7 @@ def resolve_army_index_path_from_army_name(try_army_name: str) -> str:
         retry = False
     elif " -- " in try_army_name:
         new_try = try_army_name.split(" -- ")[0]
-        print(f"I didn't find '{try_army_name}', trying '{new_try}'")
+        print(f"Warning: I didn't find '{try_army_name}', trying '{new_try}'")
         try_army_name = new_try
         retry = True
     else:
@@ -274,14 +280,14 @@ def get_pos_params(annot_params: dict[str, Any], region: str) -> dict[str, float
 
 
 @click.command()
-@click.argument("INPUT_PATH", type=click.Path(exists=True, dir_okay=False, resolve_path=True))
-@click.argument("OUTPUT_PATH", type=click.Path())
+@click.option("--nogui-input-path", "-i", type=click.Path(exists=True, dir_okay=False, resolve_path=True), default=None)
+@click.option("--output-path", "-o", type=click.Path(dir_okay=False), default=None)
 @click.option("--with-army-rules/--without-army-rules", default=DEFAULT_FEATURES["with_army_rules"])
 @click.option("--with-detachment-rules/--without-detachment-rules", default=DEFAULT_FEATURES["with_detachment_rules"])
 @click.option("--with-extra-pages/--without-with-extra-pages", default=DEFAULT_FEATURES["with_extra_pages"])
 @click.option("--with-unit-comp/--without-unit-comp", default=DEFAULT_FEATURES["with_unit_comp"])
 @click.option("--with-unit-annot/--without-unit-annot", default=DEFAULT_FEATURES["with_unit_annot"])
-@click.option("--list-mode", type=click.Choice([LIST_MODE_FULL, LIST_MODE_JUST_HEADER, LIST_MODE_NOTHING]), default=DEFAULT_FEATURES["list_mode"])
+@click.option("--list-mode", "-l", type=click.Choice([LIST_MODE_FULL, LIST_MODE_JUST_HEADER, LIST_MODE_NOTHING]), default=DEFAULT_FEATURES["list_mode"])
 @click.option("--annot-header-army-x", type=float, default=DEFAULT_ANNOT_PARAMS["header_army_x"])
 @click.option("--annot-header-army-y", type=float, default=DEFAULT_ANNOT_PARAMS["header_army_y"])
 @click.option("--annot-header-army-w", type=float, default=DEFAULT_ANNOT_PARAMS["header_army_w"])
@@ -300,25 +306,137 @@ def get_pos_params(annot_params: dict[str, Any], region: str) -> dict[str, float
 @click.option("--annot-color-fg", type=str, default=DEFAULT_ANNOT_PARAMS["color_fg"])
 @click.option("--annot-color-bg", type=str, default=DEFAULT_ANNOT_PARAMS["color_bg"])
 @click.option("--annot-color-br", type=str, default=DEFAULT_ANNOT_PARAMS["color_br"])
-@click.option("--gui/--no-gui", default=False)
 def _main(**params):
-    if params["gui"]:
-        raise Exception("Not implement yet.")
-    else:
-        main(
-            params["input_path"],
-            params["output_path"],
+    if params["nogui_input_path"] is None:
+        gui(
             {key: params[key] for key in DEFAULT_FEATURES},
             {key: params["annot_" + key] for key in DEFAULT_ANNOT_PARAMS}
         )
+    else:
+        try:
 
-def main(input_path, output_path, features, annot_params):
-    annot_params["color_fg"] = convert_color(annot_params["color_fg"])
-    annot_params["color_bg"] = convert_color(annot_params["color_bg"])
-    annot_params["color_br"] = convert_color(annot_params["color_br"])
+            with open(params["nogui_input_path"], "r", encoding="utf-8") as input_file:
+                list_content = input_file.read()
+            if params["output_path"] is None or not params["output_path"].strip():
+                root, ext = os.path.splitext(params["nogui_input_path"])
+                output_path = root + ".pdf"
+            else:
+                output_path = params["output_path"]
+            main(
+                list_content,
+                output_path,
+                {key: params[key] for key in DEFAULT_FEATURES},
+                {key: params["annot_" + key] for key in DEFAULT_ANNOT_PARAMS},
+                print
+            )
+            sys.exit(0)
+        except Exception as e:
+            print(e)
+            sys.exit(1)
 
-    with open(input_path, "r", encoding="utf-8") as input_file:
-        list_content = input_file.read()
+def derive_output_path(input_path: str | None) -> str:
+    if input_path is None or not input_path:
+        return ""
+    else:
+        return os.path.splitext(input_path)[0] + ".pdf"
+
+def gui(features, annot_params):
+    root = tk.Tk()
+    root.title("Datasheet Aggregator")
+
+    input_mode_choice_sv = tk.StringVar(); input_mode_choice_sv.set("file")
+    input_path_sv = tk.StringVar()
+    output_path_sv = tk.StringVar()
+    status_sv = tk.StringVar()
+    
+    frame = ttk.Frame(root, padding=10)
+    frame.grid()
+
+    lbl_input = ttk.Label(frame, text="Input :")
+    rb_input_mode_path = ttk.Radiobutton(frame, text="File", variable=input_mode_choice_sv, value="file")
+    entry_input_path = ttk.Entry(frame, textvariable=input_path_sv, state=tk.DISABLED)
+    btn_choose_input = ttk.Button(frame, text="Browse...")
+    rb_input_mode_text = ttk.Radiobutton(frame, text="Text", variable=input_mode_choice_sv, value="text")
+    textbox_input_text = ScrolledText(frame, wrap=tk.WORD, state=tk.DISABLED, bg=annot_params["color_bg"])
+    lbl_output = ttk.Label(frame, text="Output file (PDF):")
+    entry_output_path = ttk.Entry(frame, textvariable=output_path_sv)
+    btn_generate = ttk.Button(frame, text="Generate")
+    lbl_status = ttk.Label(frame, textvariable=status_sv)
+
+    lbl_input.grid(row=0, column=0, columnspan=4, sticky="nsew")
+    rb_input_mode_path.grid(row=1, column=0, sticky="nsew") ; entry_input_path.grid(row=1, column=1, columnspan=2, sticky="nsew") ; btn_choose_input.grid(row=1, column=3, sticky="nsew")
+    rb_input_mode_text.grid(row=2, column=0, sticky="nsew") ; textbox_input_text.grid(row=2, column=1, columnspan=3, sticky="nsew")
+    lbl_output.grid(row=3, column=0, columnspan=1, sticky="nsew") ; entry_output_path.grid(row=3, column=1, columnspan=3, sticky="nsew")
+    btn_generate.grid(row=4, column=1, columnspan=2, sticky="nsew")
+    lbl_status.grid(row=5, column=0, columnspan=4, sticky="nsew")
+    
+    active_widgets = [rb_input_mode_path, btn_choose_input, rb_input_mode_text, textbox_input_text, entry_output_path, btn_generate]
+
+    def with_temp_enabled(widget, f):
+        widget.configure(state=tk.NORMAL)
+        f()
+        widget.configure(state=tk.DISABLED)
+
+    def input_choice_changed():
+        if input_mode_choice_sv.get() == "file":
+            textbox_input_text.configure(state=tk.DISABLED)
+            textbox_input_text.configure(bg=annot_params["color_bg"])
+            btn_choose_input.configure(state=tk.NORMAL)
+            btn_choose_input.focus_set()
+        else:
+            textbox_input_text.configure(state=tk.NORMAL)
+            textbox_input_text.configure(bg="#ffffff")
+            textbox_input_text.focus_set()
+            btn_choose_input.configure(state=tk.DISABLED)
+
+    def select_input_file():
+        filetypes = (
+            ('text files', '*.txt'),
+            ('All files', '*.*')
+        )
+        chosen_path = fd.askopenfilename(title="Select a list (plain text)", filetypes=filetypes)
+        input_path_sv.set(chosen_path)
+        output_path_sv.set(derive_output_path(chosen_path))
+
+    def generate_output():
+        status_sv.set("Processing...")
+        for w in active_widgets:
+            w.configure(state=tk.DISABLED)
+        try:
+            if input_mode_choice_sv.get() == "file":
+                with open(input_path_sv.get(), "r", encoding="utf-8") as input_file:
+                    list_content = input_file.read()
+                with_temp_enabled(textbox_input_text, lambda: textbox_input_text.delete('1.0', tk.END))
+                with_temp_enabled(textbox_input_text, lambda: textbox_input_text.insert(tk.END, list_content))
+            else:
+                list_content = textbox_input_text.get('1.0', "end-1c")
+            main(
+                list_content,
+                output_path_sv.get(),
+                features,
+                annot_params,
+                status_sv.set
+            )
+        except Exception as e:
+            status_sv.set("")
+            messagebox.showerror("Error", e)
+        for w in active_widgets:
+            w.configure(state=tk.NORMAL)
+        input_choice_changed()
+
+    btn_generate.configure(command=generate_output)
+    btn_choose_input.configure(command=select_input_file)
+    rb_input_mode_path.configure(command=input_choice_changed)
+    rb_input_mode_text.configure(command=input_choice_changed)
+
+    root.mainloop()
+
+def main(list_content: str, output_path, features, annot_params, status_function):
+    _annot_params = annot_params.copy()
+    _annot_params["color_fg"] = convert_color(annot_params["color_fg"])
+    _annot_params["color_bg"] = convert_color(annot_params["color_bg"])
+    _annot_params["color_br"] = convert_color(annot_params["color_br"])
+    annot_params = _annot_params
 
     list_match = re.search(ARMY_SPEC_RE, list_content)
     if list_match is None:
@@ -335,7 +453,7 @@ def main(input_path, output_path, features, annot_params):
     rest_of_the_list = list_match.group("rest")
 
     try_army_name = raw_army_name.replace("\n", " -- ")
-    print(f"Parsed army header of '{list_name}' ({try_army_name}) with {total_points}/{max_points} points!")
+    status_function(f"Parsed army header of '{list_name}' ({try_army_name}) with {total_points}/{max_points} points!")
 
     final_list_units = parse_and_group_units(rest_of_the_list)
     main_army_index_path = resolve_army_index_path_from_army_name(try_army_name)
@@ -345,7 +463,7 @@ def main(input_path, output_path, features, annot_params):
     datasheet_dict: dict[str, Datasheet] = {}
     full_extra_pages: list[Rule] = []
     half_extra_pages: list[Datasheet] = []
-    load_rec_index(main_army_index_path, army_rules, detachment_rules, full_extra_pages, half_extra_pages, datasheet_dict)
+    load_rec_index(main_army_index_path, army_rules, detachment_rules, full_extra_pages, half_extra_pages, datasheet_dict, status_function)
 
     # TODO: fix that for allied IK and RK
     # check that we only found 1 army rule
@@ -355,7 +473,7 @@ def main(input_path, output_path, features, annot_params):
     if detachment_rule_name not in detachment_rules:
         raise Exception(f"Requested detachement rule {detachment_rule_name} not found in {detachment_rules}, exiting.")
     detachment_rule = detachment_rules[detachment_rule_name]
-    print(f"Playing with army rule '{army_rule.id}' and detachment_rule '{detachment_rule.id}'!")
+    status_function(f"Playing with army rule '{army_rule.id}' and detachment_rule '{detachment_rule.id}'!")
 
     output_pdf = PdfWriter()
     current_pages = 0
@@ -363,7 +481,7 @@ def main(input_path, output_path, features, annot_params):
 
     # add first page with list recap if needed
     if features["list_mode"] == LIST_MODE_FULL:
-        print("Adding a first page with the list recap...")
+        status_function("Adding a first page with the list recap...")
         output_pdf.add_blank_page(ref_box.width, ref_box.height)
         current_pages += 1
         
@@ -392,7 +510,7 @@ def main(input_path, output_path, features, annot_params):
     # add army rules if needed
     if features["with_army_rules"]:
         for page_range in army_rule.page_ranges:
-            print(f"Adding '{army_rule.id}' army rules (pages {page_range[0]-page_range[1]} from '{army_rule.origin}')...")
+            status_function(f"Adding '{army_rule.id}' army rules (pages {page_range[0]-page_range[1]} from '{army_rule.origin}')...")
             output_pdf.append(fileobj=army_rule.pdf, pages=(page_range[0]-1, page_range[1]))
             current_pages += page_range[1] - (page_range[0]-1)
         
@@ -402,7 +520,7 @@ def main(input_path, output_path, features, annot_params):
     # add detachment rules if needed
     if features["with_detachment_rules"]:
         for page_range in detachment_rule.page_ranges:
-            print(f"Adding '{detachment_rule.id}' detachment rules (pages {page_range[0]-page_range[1]} from '{detachment_rule.origin}')...")
+            status_function(f"Adding '{detachment_rule.id}' detachment rules (pages {page_range[0]-page_range[1]} from '{detachment_rule.origin}')...")
             output_pdf.append(fileobj=detachment_rule.pdf, pages=(page_range[0]-1, page_range[1]))
             current_pages += page_range[1] - (page_range[0]-1)
 
@@ -429,7 +547,7 @@ def main(input_path, output_path, features, annot_params):
             if extra_pages.origin not in used_origins:
                 continue
             for page_range in extra_pages.page_ranges:
-                print(f"Adding extra rule (pages {page_range[0]-page_range[1]} from '{extra_pages.origin}')...")
+                status_function(f"Adding extra rule (pages {page_range[0]-page_range[1]} from '{extra_pages.origin}')...")
                 output_pdf.append(fileobj=extra_pages.pdf, pages=(page_range[0]-1, page_range[1]))
                 current_pages += page_range[1] - (page_range[0]-1)
 
@@ -443,7 +561,7 @@ def main(input_path, output_path, features, annot_params):
     # start bi-modal printing
     next_is_top = True
     for datasheet in datasheets_to_print:
-        print(f"Adding '{datasheet.id}' ({datasheet})...")
+        status_function(f"Adding '{datasheet.id}' ({datasheet})...")
         if next_is_top:
             output_pdf.add_blank_page(ref_box.width, ref_box.height)
             current_pages += 1
@@ -461,11 +579,11 @@ def main(input_path, output_path, features, annot_params):
             next_is_top = True
 
     # Write PDF and we are done!
-    print(f"Writing output PDF to '{output_path}'...")
+    status_function(f"Writing output PDF to '{output_path}'...")
     with open(output_path, "wb") as output_file:
         output_pdf.write(output_file)
     output_pdf.close()
-    print("Done!")
+    status_function("Done!")
 
 if __name__ == "__main__":
     _main()
