@@ -8,6 +8,29 @@ This tool takes as input a plain text list such as the one exported by the offic
 
 A GUI will be implemented soon, with an associated release as a Windows `.exe` binary.
 
+## Installation
+
+To setup the project the first time:
+
+```shell
+# Create a new sandbox
+python3 -m venv .venv
+# Activate the sandbox
+source .venv/bin/activate
+# Install dependencies
+pip install -r requirements.txt
+
+# Install system dependency
+sudo apt install python3-tk
+```
+
+Then the next times:
+
+```shell
+# Activate the sandbox
+source .venv/bin/activate
+```
+
 ## Author
 
 Thomas BAGREL <tomsb07@gmail.com>
