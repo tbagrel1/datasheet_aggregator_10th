@@ -3,6 +3,7 @@ includes:
   - 'Imperial Armour -- Astartes.yaml'
   - 'Horus Heresy Legends -- Adeptus Astartes.yaml'
   - 'Legends -- Adeptus Astartes.yaml'
+  - 'Agents of the Imperium.yaml'
 army_rules:
   Adeptus Astartes: [[1, 1]]
 detachment_rules:

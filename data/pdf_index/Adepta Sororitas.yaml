@@ -1,9 +1,10 @@
 associated_file: 'data/pdf/Adepta Sororitas.pdf'
 includes:
+  - 'Agents of the Imperium.yaml'
 army_rules:
   Adepta Sororitas: [[1, 1]]
 detachment_rules:
-  Unforgiven Task Force: [[2, 5]]
+  Hallowed Martyrs: [[2, 5]]
 half_extra_pages: [71]
 datasheets:
   MORVENN VAHL: 7

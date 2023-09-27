@@ -1,5 +1,6 @@
 associated_file: 'data/pdf/Grey Knights.pdf'
 includes:
+  - 'Agents of the Imperium.yaml'
 army_rules:
   Grey Knights: [[1, 1]]
 detachment_rules:

@@ -1,0 +1,16 @@
+associated_file: 'data/pdf/Chaos Knights.pdf'
+includes:
+army_rules:
+detachment_rules:
+  Traitoris Lance: [[2, 2], [5, 6], [3, 3]]
+datasheets:
+  WAR DOG EXECUTIONER: 7
+  WAR DOG STALKER: 9
+  WAR DOG KARNIVORE: 11
+  WAR DOG BRIGAND: 13
+  WAR DOG HUNTSMAN: 15
+  KNIGHT DESPOILER: 17
+  KNIGHT DESECRATOR: 19
+  KNIGHT RAMPAGER: 21
+  KNIGHT ABOMINANT: 23
+  KNIGHT TYRANT: 25

@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "datasheet-aggregator-10th"
+version = "0.1.0"
+description = "With this Python3 tool, you can build a PDF containing all the rules needed for each of your W40k list"
+authors = ["Thomas BAGREL <tomsb07@gmail.com>"]
+readme = "README.md"
+packages = [{include = "src"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+click = "^8.1.6"
+pypdf = "^3.13.0"
+reportlab = "^4.0.4"
+Pillow = "^10.0.0"
+pyyaml = "^6.0.1"
+
+[tool.poetry.scripts]
+datasheet_aggregator = 'src:main'
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

@@ -1,5 +1,6 @@
 associated_file: 'data/pdf/Chaos Space Marines.pdf'
 includes:
+  - 'Chaos Knights.yaml'
 army_rules:
   Chaos Space Marines: [[1, 1]]
 detachment_rules:
