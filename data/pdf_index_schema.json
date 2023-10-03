@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/tbagrel1/datasheet_aggregator_10th/tree/master/data/pdf_index_schema.json",
+  "title": "PDF Index",
+  "description": "Contains indexing information for an army PDF for Warhammer 40k 10th ed",
+  "type": "object",
+  "properties": {
+    "associated_file": {
+      "type": "string",
+      "description": "path to the PDF file associated to this indexing file"
+    },
+    "includes": {
+      "description": "names (not paths) to other YAML indexing files that contains datasheets for that army",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "includes_allies": {
+      "description": "names (not paths) to other YAML indexing files that contains datasheets for allies of that army (e.g. Imperial Knights for Space Marines)",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "army_rule": {
+      "description": "page number or page range that contains the army rule",
+      "anyOf": [
+        { "type": "integer" },
+        {
+          "type": "array",
+          "prefixItems": [{ "type": "integer" }, { "type": "integer" }]
+        }
+      ]
+    },
+    "detachments": {
+      "description": "list of the indexing information for the different detachements offered by the army",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "description": "name of the detachement",
+            "type": "string"
+          },
+          "rule": {
+            "description": "page number of page range that contains the detachement rule",
+            "anyOf": [
+              { "type": "integer" },
+              {
+                "type": "array",
+                "prefixItems": [{ "type": "integer" }, { "type": "integer" }]
+              }
+            ]
+          },
+          "stratagems": {
+            "description": "page number of page range that contains the detachement stratagems",
+            "anyOf": [
+              { "type": "integer" },
+              {
+                "type": "array",
+                "prefixItems": [{ "type": "integer" }, { "type": "integer" }]
+              }
+            ]
+          },
+          "enhancements": {
+            "description": "page number of page range that contains the detachement enhancements",
+            "anyOf": [
+              { "type": "integer" },
+              {
+                "type": "array",
+                "prefixItems": [{ "type": "integer" }, { "type": "integer" }]
+              }
+            ]
+          }
+        }
+      }
+    },
+    "armory_full_pages": {
+      "description": "page number or page range that contains extra information about the army weaponry (only full (vertical) page(s) here)",
+      "anyOf": [
+        { "type": "integer" },
+        {
+          "type": "array",
+          "prefixItems": [{ "type": "integer" }, { "type": "integer" }]
+        }
+      ]
+    },
+    "armory_half_pages": {
+      "description": "page number or page range that contains extra information about the army weaponry (only half (horizontal) page(s) here)",
+      "anyOf": [
+        { "type": "integer" },
+        {
+          "type": "array",
+          "prefixItems": [{ "type": "integer" }, { "type": "integer" }]
+        }
+      ]
+    },
+    "datasheets": {
+      "description": "dictionary of the army datasheets",
+      "type": "object",
+      "additionalProperties": { "type": "integer" }
+    }
+  },
+  "required": ["associated_file", "datasheets"]
+}
