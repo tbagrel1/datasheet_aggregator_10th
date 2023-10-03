@@ -66,13 +66,13 @@ ARMY_SPEC_RE = (
     r"(?P<game_format>[^\n]+? \((?P<max_points>[0-9]+) points\))\n"
     r"(?P<detachment_rule>[^\n]+?))\n"
     r"\n\n"
-    r"(?P<rest>CHARACTER\n\n(?:.*?\n)+$)"
+    r"(?P<rest>CHARACTERS?\n\n(?:.*?\n)+\s*$)"
 )
 
 UNIT_RE = (
     r"(?P<unit_name>[^\n]+?) \((?P<unit_points>[0-9]+) points\)\n"
     r"(?P<wargear>(?:  [^\n]+?(?:\n|$))+)"
-    r"(?:\n|$)"
+    r"(?:\n|\s*$)"
 )
 
 @dataclass
