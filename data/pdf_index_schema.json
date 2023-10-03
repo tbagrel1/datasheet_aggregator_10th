@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/tbagrel1/datasheet_aggregator_10th/tree/master/data/pdf_index_schema.json",
+  "$id": "https://raw.githubusercontent.com/tbagrel1/datasheet_aggregator_10th/master/data/pdf_index_schema.json",
   "title": "PDF Index",
   "description": "Contains indexing information for an army PDF for Warhammer 40k 10th ed",
   "type": "object",
@@ -26,6 +26,7 @@
     "army_rule": {
       "description": "page number or page range that contains the army rule",
       "anyOf": [
+        { "type": "null" },
         { "type": "integer" },
         {
           "type": "array",
@@ -79,6 +80,7 @@
     "armory_full_pages": {
       "description": "page number or page range that contains extra information about the army weaponry (only full (vertical) page(s) here)",
       "anyOf": [
+        { "type": "null" },
         { "type": "integer" },
         {
           "type": "array",
@@ -89,6 +91,7 @@
     "armory_half_pages": {
       "description": "page number or page range that contains extra information about the army weaponry (only half (horizontal) page(s) here)",
       "anyOf": [
+        { "type": "null" },
         { "type": "integer" },
         {
           "type": "array",
