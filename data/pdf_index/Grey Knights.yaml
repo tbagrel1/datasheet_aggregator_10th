@@ -1,10 +1,17 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/tbagrel1/datasheet_aggregator_10th/master/data/pdf_index_schema.json
 associated_file: 'data/pdf/Grey Knights.pdf'
-includes:
+includes: []
+includes_allies:
   - 'Agents of the Imperium.yaml'
-army_rules:
-  Grey Knights: [[1, 1]]
-detachment_rules:
-  Teleport Strike Force: [[2, 5]]
+  - 'Imperial Knights.yaml'
+army_rule: 1
+detachments:
+  - name: Teleport Strike Force
+    rule: 2
+    stratagems: [3, 4]
+    enhancements: 5
+armoury_full_pages: null
+armoury_half_pages: null
 datasheets:
   KALDOR DRAIGO: 7
   GRAND MASTER VOLDUS: 9

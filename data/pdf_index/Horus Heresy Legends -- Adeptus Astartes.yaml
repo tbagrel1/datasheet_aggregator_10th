@@ -1,8 +1,11 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/tbagrel1/datasheet_aggregator_10th/master/data/pdf_index_schema.json
 associated_file: 'data/pdf/Horus Heresy Legends -- Adeptus Astartes.pdf'
 includes: []
-army_rules:
-detachment_rules:
-half_extra_pages: [59]
+includes_allies: []
+army_rule: null
+detachments: []
+armoury_full_pages: null
+armoury_half_pages: 59
 datasheets:
   KRATOS: 1
   DEREDEO DREADNOUGHT: 3

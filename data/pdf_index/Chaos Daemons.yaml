@@ -1,9 +1,15 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/tbagrel1/datasheet_aggregator_10th/master/data/pdf_index_schema.json
 associated_file: 'data/pdf/Chaos Daemons.pdf'
-includes:
-army_rules:
-  Chaos Daemons: [[1, 1]]
-detachment_rules:
-  Daemonic Incursion: [[2, 5]]
+includes: []
+includes_allies: []
+army_rule: 1
+detachments:
+  - name: Daemonic Incursion
+    rule: 2
+    stratagems: [3, 4]
+    enhancements: 5
+armoury_full_pages: null
+armoury_half_pages: null
 datasheets:
   SKARBRAND: 7
   BLOODTHIRSTER: 9

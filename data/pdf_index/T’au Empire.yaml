@@ -1,12 +1,16 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/tbagrel1/datasheet_aggregator_10th/master/data/pdf_index_schema.json
 associated_file: data/pdf/T’au Empire.pdf
 includes:
   - 'Imperial Armour -- T’au Empire.yaml'
   - 'Legends -- T’au Empire.yaml'
-army_rules:
-  T'au Empire: [[1, 1]]
-detachment_rules:
-  Kauyon: [[2, 5]]
-full_extra_pages: [[7, 7]]
+army_rule: 1
+detachments:
+  - name: Kauyon
+    rule: 2
+    stratagems: [3, 4]
+    enhancements: 5
+armoury_full_pages: 7
+armoury_half_pages: null
 datasheets:
   COMMANDER SHADOWSUN: 9
   COMMANDER FARSIGHT: 11

@@ -1,14 +1,19 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/tbagrel1/datasheet_aggregator_10th/master/data/pdf_index_schema.json
 associated_file: data/pdf/Space Marines.pdf
 includes:
   - 'Imperial Armour -- Astartes.yaml'
-  - 'Horus Heresy Legends -- Adeptus Astartes.yaml'
   - 'Legends -- Adeptus Astartes.yaml'
+includes_allies:
   - 'Agents of the Imperium.yaml'
-army_rules:
-  Adeptus Astartes: [[1, 1]]
-detachment_rules:
-  Gladius Task Force: [[2, 5]]
-half_extra_pages: [217, 218]
+  - 'Imperial Knights.yaml'
+army_rule: 1
+detachments:
+  - name: Gladius Task Force
+    rule: 2
+    stratagems: [3, 4]
+    enhancements: 5
+armoury_full_pages: null
+armoury_half_pages: [217, 218]
 datasheets:
   PRIMARIS CAPTAIN: 7
   CAPTAIN IN GRAVIS ARMOUR: 9

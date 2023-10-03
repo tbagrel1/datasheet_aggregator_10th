@@ -1,8 +1,12 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/tbagrel1/datasheet_aggregator_10th/master/data/pdf_index_schema.json
 associated_file: 'data/pdf/Legends -- Adeptus Astartes.pdf'
-includes: []
-army_rules:
-detachment_rules:
-half_extra_pages: [45]
+includes:
+  - 'Horus Heresy Legends -- Adeptus Astartes.yaml'
+includes_allies: []
+army_rule: null
+detachments: []
+armoury_full_pages: null
+armoury_half_pages: 45
 datasheets:
   LAND RAIDER HELIOS: 1
   MORTIS DREADNOUGHT: 3

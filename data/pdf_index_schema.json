@@ -77,7 +77,7 @@
         }
       }
     },
-    "armory_full_pages": {
+    "armoury_full_pages": {
       "description": "page number or page range that contains extra information about the army weaponry (only full (vertical) page(s) here)",
       "anyOf": [
         { "type": "null" },
@@ -88,7 +88,7 @@
         }
       ]
     },
-    "armory_half_pages": {
+    "armoury_half_pages": {
       "description": "page number or page range that contains extra information about the army weaponry (only half (horizontal) page(s) here)",
       "anyOf": [
         { "type": "null" },

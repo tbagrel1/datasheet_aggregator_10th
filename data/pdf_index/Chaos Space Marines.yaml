@@ -1,11 +1,17 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/tbagrel1/datasheet_aggregator_10th/master/data/pdf_index_schema.json
 associated_file: 'data/pdf/Chaos Space Marines.pdf'
 includes:
+  - 'Horus Heresy Legends -- Adeptus Astartes.yaml'
+includes_allies:
   - 'Chaos Knights.yaml'
-army_rules:
-  Chaos Space Marines: [[1, 1]]
-detachment_rules:
-  Slaves to Darkness: [[2, 5]]
-half_extra_pages: [105]
+army_rule: 1
+detachments:
+  - name: Slaves to Darkness
+    rule: 2
+    stratagems: [3, 4]
+    enhancements: 5
+armoury_full_pages: null
+armoury_half_pages: 105
 datasheets:
   ABADDON THE DESPOILER: 7
   HAARKEN WORLDCLAIMER: 9

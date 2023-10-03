@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/tbagrel1/datasheet_aggregator_10th/master/data/pdf_index_schema.json
+associated_file: 'data/pdf/Imperial Armour -- Imperial Knights.pdf'
+includes: []
+includes_allies: []
+army_rule: null
+detachments: []
+armoury_full_pages: null
+armoury_half_pages: null
+datasheets:
+  ACASTUS KNIGHT ASTERIUS: 1
+  ACASTUS KNIGHT PORPHYRION: 3
+  CERASTUS KNIGHT LANCER: 5
+  CERASTUS KNIGHT CASTIGATOR: 7
+  CERASTUS KNIGHT ACHERON: 9
+  CERASTUS KNIGHT ATRAPOS: 11
+  QUESTORIS KNIGHT MAGAERA: 13
+  QUESTORIS KNIGHT STYRIX: 15
+  ARMIGER MOIRAX: 17

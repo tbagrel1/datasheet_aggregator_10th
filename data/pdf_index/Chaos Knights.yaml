@@ -1,8 +1,16 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/tbagrel1/datasheet_aggregator_10th/master/data/pdf_index_schema.json
 associated_file: 'data/pdf/Chaos Knights.pdf'
 includes:
-army_rules:
-detachment_rules:
-  Traitoris Lance: [[2, 2], [5, 6], [3, 3]]
+  - 'Imperial Armour -- Chaos Knights.yaml'
+includes_allies: []
+army_rule: 1
+detachments:
+  - name: Traitoris Lance
+    rule: 2
+    stratagems: [5, 6]
+    enhancements: 3
+armoury_full_pages: null
+armoury_half_pages: null
 datasheets:
   WAR DOG EXECUTIONER: 7
   WAR DOG STALKER: 9

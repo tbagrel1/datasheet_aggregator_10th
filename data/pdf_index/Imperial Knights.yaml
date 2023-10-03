@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/tbagrel1/datasheet_aggregator_10th/master/data/pdf_index_schema.json
+associated_file: 'data/pdf/Imperial Knights.pdf'
+includes:
+  - 'Imperial Armour -- Imperial Knights.yaml'
+includes_allies: []
+army_rule: 1
+detachments:
+  - name: Noble Lance
+    rule: 2
+    stratagems: [5, 6]
+    enhancements: 3
+armoury_full_pages: null
+armoury_half_pages: null
+datasheets:
+  ARMIGER HELVERIN: 7
+  ARMIGER WARGLAIVE: 9
+  KNIGHT PALADIN: 11
+  KNIGHT ERRANT: 13
+  KNIGHT GALLANT: 15
+  KNIGHT WARDEN: 17
+  KNIGHT CRUSADER: 19
+  KNIGHT PRECEPTOR: 21
+  KNIGHT CASTELLAN: 23
+  KNIGHT VALIANT: 25
+  CANIS REX: 27

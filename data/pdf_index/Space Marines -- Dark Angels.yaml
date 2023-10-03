@@ -1,9 +1,16 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/tbagrel1/datasheet_aggregator_10th/master/data/pdf_index_schema.json
 associated_file: 'data/pdf/Space Marines -- Dark Angels.pdf'
 includes:
   - 'Space Marines.yaml'
-army_rules:
-detachment_rules:
-  Unforgiven Task Force: [[1, 1], [3, 5]]
+includes_allies: []
+army_rule: null
+detachments:
+  - name: Unforgiven Task Force
+    rule: 1
+    stratagems: [3, 4]
+    enhancements: 5
+armoury_full_pages: null
+armoury_half_pages: null
 datasheets:
   AZRAEL: 7
   BELIAL: 9

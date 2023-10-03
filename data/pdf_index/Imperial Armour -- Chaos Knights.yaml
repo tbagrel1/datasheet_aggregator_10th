@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/tbagrel1/datasheet_aggregator_10th/master/data/pdf_index_schema.json
+associated_file: 'data/pdf/Imperial Armour -- Chaos Knights.pdf'
+includes: []
+includes_allies: []
+army_rule: null
+detachments: []
+armoury_full_pages: null
+armoury_half_pages: null
+datasheets:
+  CHAOS ACASTUS KNIGHT ASTERIUS: 1
+  CHAOS ACASTUS KNIGHT PORPHYRION: 3
+  CHAOS CERASTUS KNIGHT LANCER: 5
+  CHAOS CERASTUS KNIGHT CASTIGATOR: 7
+  CHAOS CERASTUS KNIGHT ACHERON: 9
+  CHAOS CERASTUS KNIGHT ATRAPOS: 11
+  CHAOS QUESTORIS KNIGHT MAGAERA: 13
+  CHAOS QUESTORIS KNIGHT STYRIX: 15
+  WAR DOG MOIRAX: 17

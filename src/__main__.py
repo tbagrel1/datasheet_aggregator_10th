@@ -6,6 +6,7 @@ import os
 import yaml
 import math
 import sys
+import traceback
 import tkinter as tk
 from tkinter import filedialog as fd
 from tkinter import ttk
@@ -15,7 +16,7 @@ from pypdf import Transformation, PdfReader, PdfWriter, PageObject
 from io import BytesIO
 from reportlab.pdfgen import canvas
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Union
 from PIL import ImageColor
 
 PDF_INDEX_DIR = os.path.join("data", "pdf_index")
@@ -52,12 +53,15 @@ DEFAULT_ANNOT_PARAMS = {
     "color_br": '#202020'
 }
 DEFAULT_FEATURES = {
-    "with_army_rules": True,
-    "with_detachment_rules": True,
-    "with_extra_pages": True,
+    "with_army_rule": True,
+    "with_detachment_rule": True,
+    "with_detachment_stratagems": True,
+    "with_detachment_enhancements": True,
+    "with_armoury": True,
     "with_unit_comp": False,
     "with_unit_annot": True,
-    "list_mode": LIST_MODE_FULL
+    "list_mode": LIST_MODE_FULL,
+    "enable_armoury_padding": False
 }
 
 ARMY_SPEC_RE = (
@@ -69,6 +73,8 @@ ARMY_SPEC_RE = (
     r"(?P<rest>CHARACTERS?\n\n(?:.*?\n)+\s*$)"
 )
 
+# issue 1: group vide capturé
+# issue 2: unités pas séparés si pas de saut de ligne
 UNIT_RE = (
     r"(?P<unit_name>[^\n]+?) \((?P<unit_points>[0-9]+) points\)\n"
     r"(?P<wargear>(?:  [^\n]+?(?:\n|$))+)"
@@ -91,6 +97,20 @@ class Rule:
 
     def __str__(self):
         return f"pages {self.page_ranges} from '{self.origin}'"
+
+    def __repr__(self):
+        return self.__str__()
+
+@dataclass
+class Detachment:
+    id: str
+    origin: str
+    rule: Rule
+    stratagems: Rule
+    enhancements: Rule
+
+    def __str__(self):
+        return f"{self.rule}\n{self.stratagems}\n{self.enhancements}"
 
     def __repr__(self):
         return self.__str__()
@@ -139,6 +159,7 @@ def arrange_in_two(text: str, lines_limit: int, sep_p1: str, sep_p2: str) -> tup
     c1 = 0
     c2 = 0
     for g in groups:
+        # print(f"Trying to write {g}")
         if not l1_full:
             if not l1:
                 g[0] = g[0][len(sep_p2):]  # cut extra useless delimiter
@@ -162,6 +183,7 @@ def arrange_in_two(text: str, lines_limit: int, sep_p1: str, sep_p2: str) -> tup
             g[0] = sep_p1[1:] + g[0]
             l2.extend(g)
             c2 += c_sep_p1 + len(g)
+        # print(f"Wrote {g}")
     return "\n".join(l1), "\n".join(l2)
 
 
@@ -211,28 +233,52 @@ def add_annot(page: PageObject, text_content: str, pos_params: dict[str, float],
             annotation, Transformation().scale(1.0 / PDFPTS_RATIO).translate(pos_params["x"], pos_params["y"]), over=True, expand=False
         )
 
-def load_rec_index(army_index_path: str, army_rules: dict[str, Rule], detachment_rules: dict[str, Rule], full_extra_pages: list[Rule], half_extra_pages: list[Datasheet], datasheets: dict[str, Datasheet], status_function) -> None:
+
+def get_army_name(army_index_path: str) -> str:
+    _, filename = os.path.split(army_index_path)
+    base, _ = os.path.splitext(filename)
+    return base
+
+
+def parse_page_ref(raw: Union[int, list[int]]) -> list[list[int]]:
+    if isinstance(raw, int):
+        return [[raw, raw]]
+    elif isinstance(raw, list):
+        return [raw]
+    else:
+        raise Exception("Invalid format for page reference")
+
+
+def load_rec_index(army_index_path: str, army_rules: list[Rule], detachments: dict[str, Detachment], armoury_full_pages: list[Rule], armoury_half_pages: list[Datasheet], datasheets: dict[str, Datasheet], status_function, is_main: bool = True) -> None:
     status_function(f"Loading '{army_index_path}'...")
     with open(army_index_path, "r", encoding="utf-8") as army_index_file:
         content = yaml.load(army_index_file, yaml.Loader)
     army_pdf = PdfReader(content["associated_file"])
-    if "army_rules" in content and content["army_rules"] is not None:
-        for army_rule_name, army_page_ranges in content["army_rules"].items():
-            army_rules[army_rule_name] = Rule(army_rule_name, content["associated_file"], army_pdf, army_page_ranges)
-    if "detachment_rules" in content and content["detachment_rules"] is not None:
-        for detachment_rule_name, detachment_page_ranges in content["detachment_rules"].items():
-            detachment_rules[detachment_rule_name] = Rule(detachment_rule_name, content["associated_file"], army_pdf, detachment_page_ranges)
-    if "full_extra_pages" in content and content["full_extra_pages"] is not None:
-        full_extra_pages.append(Rule("extra rule", content["associated_file"], army_pdf, content["full_extra_pages"]))
-    if "half_extra_pages" in content and content["half_extra_pages"] is not None:
-        for page_nb in content["half_extra_pages"]:
-            half_extra_pages.append(Datasheet("extra rule", content["associated_file"], army_pdf, page_nb))
+    if "army_rule" in content and content["army_rule"] is not None:
+        army_rules.append(Rule(get_army_name(army_index_path), content["associated_file"], army_pdf, parse_page_ref(content["army_rule"])))
+    if "detachments" in content and content["detachments"] is not None:
+        for detachment in content["detachments"]:
+            detachments[detachment["name"]] = Detachment(
+                detachment["name"], content["associated_file"],
+                Rule(detachment["name"] + " rule", content["associated_file"], army_pdf, parse_page_ref(detachment["rule"])),
+                Rule(detachment["name"] + " stratagems", content["associated_file"], army_pdf, parse_page_ref(detachment["stratagems"])),
+                Rule(detachment["name"] + " enhancements", content["associated_file"], army_pdf, parse_page_ref(detachment["enhancements"]))
+            )
+    if "armoury_full_pages" in content and content["armoury_full_pages"] is not None:
+        armoury_full_pages.append(Rule("extra rule", content["associated_file"], army_pdf, content["armoury_full_pages"]))
+    if "armoury_half_pages" in content and content["armoury_half_pages"] is not None:
+        for page_nb in content["armoury_half_pages"]:
+            armoury_half_pages.append(Datasheet("extra rule", content["associated_file"], army_pdf, page_nb))
     for (id, page_nb) in content["datasheets"].items():
         datasheets[id] = Datasheet(id, content["associated_file"], army_pdf, page_nb)
-    if content["includes"]:
+    if content["includes"] and content["includes"] is not None:
         for include in content["includes"]:
             include_path = os.path.join(PDF_INDEX_DIR, include)
-            load_rec_index(include_path, army_rules, detachment_rules, full_extra_pages, half_extra_pages, datasheets, status_function)
+            load_rec_index(include_path, army_rules, detachments, armoury_full_pages, armoury_half_pages, datasheets, status_function, is_main=True)
+    if content["includes_allies"] and content["includes_allies"] is not None and is_main:
+        for include in content["includes_allies"]:
+            include_path = os.path.join(PDF_INDEX_DIR, include)
+            load_rec_index(include_path, army_rules, detachments, armoury_full_pages, armoury_half_pages, datasheets, status_function, is_main=False)
 
 
 def convert_color(hexstring: str) -> tuple[float, float, float]:
@@ -284,12 +330,15 @@ def get_pos_params(annot_params: dict[str, Any], region: str) -> dict[str, float
 @click.command()
 @click.option("--nogui-input-path", "-i", type=click.Path(exists=True, dir_okay=False, resolve_path=True), default=None)
 @click.option("--output-path", "-o", type=click.Path(dir_okay=False), default=None)
-@click.option("--with-army-rules/--without-army-rules", default=DEFAULT_FEATURES["with_army_rules"])
-@click.option("--with-detachment-rules/--without-detachment-rules", default=DEFAULT_FEATURES["with_detachment_rules"])
-@click.option("--with-extra-pages/--without-extra-pages", default=DEFAULT_FEATURES["with_extra_pages"])
+@click.option("--with-army-rule/--without-army-rule", default=DEFAULT_FEATURES["with_army_rule"])
+@click.option("--with-detachment-rule/--without-detachment-rule", default=DEFAULT_FEATURES["with_detachment_rule"])
+@click.option("--with-detachment-stratagems/--without-detachment-stratagems", default=DEFAULT_FEATURES["with_detachment_stratagems"])
+@click.option("--with-detachment-enhancements/--without-detachment-enhancements", default=DEFAULT_FEATURES["with_detachment_enhancements"])
+@click.option("--with-armoury/--without-armoury", default=DEFAULT_FEATURES["with_armoury"])
 @click.option("--with-unit-comp/--without-unit-comp", default=DEFAULT_FEATURES["with_unit_comp"])
 @click.option("--with-unit-annot/--without-unit-annot", default=DEFAULT_FEATURES["with_unit_annot"])
 @click.option("--list-mode", "-l", type=click.Choice([LIST_MODE_FULL, LIST_MODE_JUST_HEADER, LIST_MODE_NOTHING]), default=DEFAULT_FEATURES["list_mode"])
+@click.option("--enable-armoury-padding/--disable-armoury-padding", default=DEFAULT_FEATURES["enable_armoury_padding"])
 @click.option("--annot-header-army-x", type=float, default=DEFAULT_ANNOT_PARAMS["header_army_x"])
 @click.option("--annot-header-army-y", type=float, default=DEFAULT_ANNOT_PARAMS["header_army_y"])
 @click.option("--annot-header-army-w", type=float, default=DEFAULT_ANNOT_PARAMS["header_army_w"])
@@ -333,7 +382,7 @@ def main(**params):
             )
             sys.exit(0)
         except Exception as e:
-            print(e)
+            print(traceback.format_exc())
             sys.exit(1)
 
 def derive_output_path(input_path: str | None) -> str:
@@ -420,8 +469,9 @@ def gui(features, annot_params):
                 status_sv.set
             )
         except Exception as e:
+            exception_repr = traceback.format_exc()
             status_sv.set("")
-            messagebox.showerror("Error", e)
+            messagebox.showerror("Error", exception_repr)
         for w in active_widgets:
             w.configure(state=tk.NORMAL)
         input_choice_changed()
@@ -460,22 +510,21 @@ def convert_list_to_pdf(list_content: str, output_path, features, annot_params, 
     final_list_units = parse_and_group_units(rest_of_the_list)
     main_army_index_path = resolve_army_index_path_from_army_name(try_army_name)
 
-    army_rules: dict[str, Rule] = {}
-    detachment_rules: dict[str, Rule] = {}
+    army_rules: list[Rule] = []
+    detachments: dict[str, Detachment] = {}
+    armoury_full_pages: list[Rule] = []
+    armoury_half_pages: list[Datasheet] = []
     datasheet_dict: dict[str, Datasheet] = {}
-    full_extra_pages: list[Rule] = []
-    half_extra_pages: list[Datasheet] = []
-    load_rec_index(main_army_index_path, army_rules, detachment_rules, full_extra_pages, half_extra_pages, datasheet_dict, status_function)
+    load_rec_index(main_army_index_path, army_rules, detachments, armoury_full_pages, armoury_half_pages, datasheet_dict, status_function)
 
-    # TODO: fix that for allied IK and RK
     # check that we only found 1 army rule
     if len(army_rules) > 1:
         raise Exception(f"Several army rules detected: {army_rules}, exiting.")
-    army_rule = list(army_rules.items())[0][1]
-    if detachment_rule_name not in detachment_rules:
-        raise Exception(f"Requested detachement rule {detachment_rule_name} not found in {detachment_rules}, exiting.")
-    detachment_rule = detachment_rules[detachment_rule_name]
-    status_function(f"Playing with army rule '{army_rule.id}' and detachment_rule '{detachment_rule.id}'!")
+    army_rule = army_rules[0]
+    if detachment_rule_name not in detachments:
+        raise Exception(f"Requested detachment rule {detachment_rule_name} not found in {detachments}, exiting.")
+    detachment = detachments[detachment_rule_name]
+    status_function(f"Playing with army rule '{army_rule.id}' and detachment_rule '{detachment.id}'!")
 
     output_pdf = PdfWriter()
     current_pages = 0
@@ -509,21 +558,33 @@ def convert_list_to_pdf(list_content: str, output_path, features, annot_params, 
         }
         add_annot(output_pdf.get_page(current_pages-1),rest_of_the_list, pos_params, annot_params, "\n\n", "")
 
-    # add army rules if needed
-    if features["with_army_rules"]:
+    # add army rule if needed
+    if features["with_army_rule"]:
         for page_range in army_rule.page_ranges:
-            status_function(f"Adding '{army_rule.id}' army rules (pages {page_range[0]-page_range[1]} from '{army_rule.origin}')...")
+            status_function(f"Adding '{army_rule.id}' army rules (pages {page_range} from '{army_rule.origin}')...")
             output_pdf.append(fileobj=army_rule.pdf, pages=(page_range[0]-1, page_range[1]))
             current_pages += page_range[1] - (page_range[0]-1)
         
         if features["list_mode"] == LIST_MODE_JUST_HEADER:
             add_annot(output_pdf.get_page(0), list_header, get_pos_params(annot_params, "header_army"), annot_params, "\n", "")
 
-    # add detachment rules if needed
-    if features["with_detachment_rules"]:
-        for page_range in detachment_rule.page_ranges:
-            status_function(f"Adding '{detachment_rule.id}' detachment rules (pages {page_range[0]-page_range[1]} from '{detachment_rule.origin}')...")
-            output_pdf.append(fileobj=detachment_rule.pdf, pages=(page_range[0]-1, page_range[1]))
+    # add detachment rule if needed
+    if features["with_detachment_rule"]:
+        for page_range in detachment.rule.page_ranges:
+            status_function(f"Adding '{detachment.rule.id}' detachment rules (pages {page_range} from '{detachment.rule.origin}')...")
+            output_pdf.append(fileobj=detachment.rule.pdf, pages=(page_range[0]-1, page_range[1]))
+            current_pages += page_range[1] - (page_range[0]-1)
+    # add detachment stratagems if needed
+    if features["with_detachment_stratagems"]:
+        for page_range in detachment.stratagems.page_ranges:
+            status_function(f"Adding '{detachment.stratagems.id}' detachment stratagems (pages {page_range} from '{detachment.stratagems.origin}')...")
+            output_pdf.append(fileobj=detachment.stratagems.pdf, pages=(page_range[0]-1, page_range[1]))
+            current_pages += page_range[1] - (page_range[0]-1)
+    # add detachment enhancements if needed
+    if features["with_detachment_enhancements"]:
+        for page_range in detachment.enhancements.page_ranges:
+            status_function(f"Adding '{detachment.enhancements.id}' detachment enhancements (pages {page_range} from '{detachment.enhancements.origin}')...")
+            output_pdf.append(fileobj=detachment.enhancements.pdf, pages=(page_range[0]-1, page_range[1]))
             current_pages += page_range[1] - (page_range[0]-1)
 
     datasheets_to_print: list[Datasheet] = []
@@ -543,9 +604,9 @@ def convert_list_to_pdf(list_content: str, output_path, features, annot_params, 
             datasheets_to_print.append(Datasheet(datasheet.id, datasheet.origin, datasheet.pdf, datasheet.page_nb + 1, datasheet.extra_text))
 
     # add extra rule pages if needed
-    if features["with_extra_pages"]:
+    if features["with_armoury"]:
         # now we add only the needed extra pages, starting with full ones:
-        for extra_pages in full_extra_pages:
+        for extra_pages in armoury_full_pages:
             if extra_pages.origin not in used_origins:
                 continue
             for page_range in extra_pages.page_ranges:
@@ -554,11 +615,11 @@ def convert_list_to_pdf(list_content: str, output_path, features, annot_params, 
                 current_pages += page_range[1] - (page_range[0]-1)
 
         # now we add the half ones as pseudo-datasheets to be printed before the actual ones
-        half_extra_pages_to_include = [extra_page for extra_page in half_extra_pages if extra_page.origin in used_origins]
-        if len(half_extra_pages_to_include) % 2 == 1:
+        armoury_half_pages_to_include = [extra_page for extra_page in armoury_half_pages if extra_page.origin in used_origins]
+        if len(armoury_half_pages_to_include) % 2 == 1 and features["enable_armoury_padding"]:
             # pad to start datasheets on a new page
-            half_extra_pages_to_include.append(Datasheet("padding", PADDING_HALF_PAGE[0], PdfReader(PADDING_HALF_PAGE[0]), PADDING_HALF_PAGE[1]))
-        datasheets_to_print = half_extra_pages_to_include + datasheets_to_print
+            armoury_half_pages_to_include.append(Datasheet("padding", PADDING_HALF_PAGE[0], PdfReader(PADDING_HALF_PAGE[0]), PADDING_HALF_PAGE[1]))
+        datasheets_to_print = armoury_half_pages_to_include + datasheets_to_print
 
     # start bi-modal printing
     next_is_top = True
