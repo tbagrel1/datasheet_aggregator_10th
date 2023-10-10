@@ -70,15 +70,12 @@ ARMY_SPEC_RE = (
     r"(?P<game_format>[^\n]+? \((?P<max_points>[0-9]+) points\))\n"
     r"(?P<detachment_rule>[^\n]+?))\n"
     r"\n\n"
-    r"(?P<rest>CHARACTERS?\n\n(?:.*?\n)+\s*$)"
+    r"(?P<rest>(?:.*\n)+\Z)"
 )
 
-# issue 1: group vide capturé
-# issue 2: unités pas séparés si pas de saut de ligne
 UNIT_RE = (
     r"(?P<unit_name>[^\n]+?) \((?P<unit_points>[0-9]+) points\)\n"
-    r"(?P<wargear>(?:  [^\n]+?(?:\n|$))+)"
-    r"(?:\n|\s*$)"
+    r"(?P<wargear>(?:  [^\n]*?(?:\n|\Z))+)"
 )
 
 @dataclass
@@ -140,54 +137,66 @@ def fuse_group_into(group: list[Unit], units: list[Unit]) -> None:
         [f"{len(group)} u. of {group[0].name} ({total_points} points)\n"] +
         [l for u in group for l in z(u.full_text.split("\n")) if l]
     ).strip()
-    units.append(
-        Unit(
+    u = Unit(
         name=group[0].name,
         id=group[0].id,
         points=total_points,
         full_text=merged_full_text_lines
-    ))
+    )
+    units.append(u)
 
 
-def arrange_in_two(text: str, lines_limit: int, sep_p1: str, sep_p2: str) -> tuple[str, str]:
-    groups = [[l for l in (sep_p2 + g).split("\n") if l] for g in text.split(sep_p1 + sep_p2) if g]
-    l1 = []
-    l2 = []
-    l1_full = False
-    l2_full = False
-    c_sep_p1 = len(sep_p1[1:].split("\n")) - 1
-    c1 = 0
-    c2 = 0
-    for g in groups:
-        # print(f"Trying to write {g}")
-        if not l1_full:
-            if not l1:
-                g[0] = g[0][len(sep_p2):]  # cut extra useless delimiter
-                l1.extend(g)
-                c1 += len(g)
+def arrange_in_two(text: str, lines_count_limit: int, sep: str, breakpoint_lookahead: str) -> tuple[str, str]:
+    str_groups_with_lookahead_removed = [g for g in text.split(sep + breakpoint_lookahead) if g.strip()]
+    str_groups_with_lookahead_added_back = [] if not str_groups_with_lookahead_removed else [str_groups_with_lookahead_removed[0]] + [breakpoint_lookahead + g for g in str_groups_with_lookahead_removed[1:]]
+    lines_groups = [[l for l in g.split("\n") if l.strip()] for g in str_groups_with_lookahead_added_back]  # This removes empty lines inside a group
+    nb_empty_lines_sep_equiv = len(sep.split("\n")) - 2
+
+    lines_column1 = []
+    lines_column2 = []
+    is_full_column1 = False
+    lines_count_column1 = 0
+    lines_count_column2 = 0
+
+    for lines_group in lines_groups:
+        if not is_full_column1:
+            if not lines_column1:
+                # first element of column, so doesn't need to be prefixed by sep
+                expected_size = len(lines_group)
+                lines_column1.extend(lines_group)
+                lines_count_column1 += expected_size
             else:
-                if c1 + c_sep_p1 + len(g) <= lines_limit:
-                    g[0] = sep_p1[1:] + g[0]
-                    l1.extend(g)
-                    c1 += c_sep_p1 + len(g)
+                # not the first element, so need to be prefixed by sep
+                expected_size = len(lines_group) + nb_empty_lines_sep_equiv
+                if lines_count_column1 + expected_size <= lines_count_limit:
+                    # it will fit in column 1
+                    lines_column1.extend([""] * nb_empty_lines_sep_equiv + lines_group)
+                    lines_count_column1 += expected_size
                 else:
-                    # print(f"{c1}/{lines_limit} lines filled, putting the next {len(g)}({c_sep_p1 + len(g)}) on the next column")
-                    l1_full = True
-                    l2.extend(g)
-                    c2 += len(g)
+                    # if won't fit in column 1, so mark column 1 as complete and go to column 2
+                    # now it doesn't need to be prefixed by sep
+                    expected_size = len(lines_group)
+                    is_full_column1 = True
+                    lines_column2.extend(lines_group)
+                    lines_count_column2 += expected_size
         else:
-            if not l2_full and c2 + c_sep_p1 + len(g) > lines_limit:
-                m = "\n".join(g)
-                print(f"Warning: overflowing text: {repr(m)}...")
-                l2_full = True
-            g[0] = sep_p1[1:] + g[0]
-            l2.extend(g)
-            c2 += c_sep_p1 + len(g)
-        # print(f"Wrote {g}")
-    return "\n".join(l1), "\n".join(l2)
+            # it isn't the first element of column 2 (so it needs a sep), and we have to put it in column 2 regardless of its size
+            expected_size = len(lines_group) + nb_empty_lines_sep_equiv
+            lines_column2.extend([""] * nb_empty_lines_sep_equiv + lines_group)
+            lines_count_column2 += expected_size
+
+    if lines_count_column1 > lines_count_limit:
+        # should not happen
+        overflowing_text = "\n".join(lines_column1[lines_count_limit:])
+        print(f"Warning: overflowing text in column 1: '''{overflowing_text}'''...")
+    if lines_count_column2 > lines_count_limit:
+        overflowing_text = "\n".join(lines_column2[lines_count_limit:])
+        print(f"Warning: overflowing text in column 2: '''{overflowing_text}'''...")
+
+    return "\n".join(lines_column1), "\n".join(lines_column2)
 
 
-def add_annot(page: PageObject, text_content: str, pos_params: dict[str, float], annot_params: dict[str, Any], sep_p1: str, sep_p2: str, extra_margin: float = DATASHEET_ANNOT_EXTRA_MARGIN) -> None:
+def add_annot(page: PageObject, text_content: str, pos_params: dict[str, float], annot_params: dict[str, Any], sep_can_be_discarded_pb: str, sep_must_be_kept: str, extra_margin: float = DATASHEET_ANNOT_EXTRA_MARGIN) -> None:
     line_height = annot_params["line_spacing"] * annot_params["font_size"]
     packet = BytesIO()
     # create a new PDF with Reportlab
@@ -200,7 +209,7 @@ def add_annot(page: PageObject, text_content: str, pos_params: dict[str, float],
     to = can.beginText(extra_margin * annot_params["font_size"], canvas_height - (1 + (max(0, extra_margin - 0.2))) * annot_params["font_size"])
     to.setFont(annot_params["font_face"], annot_params["font_size"], line_height)
     nb_lines_in_one_column = int(math.floor(canvas_height / line_height))
-    l1, l2 = arrange_in_two(text_content, nb_lines_in_one_column, sep_p1, sep_p2)
+    l1, l2 = arrange_in_two(text_content, nb_lines_in_one_column, sep_can_be_discarded_pb, sep_must_be_kept)
     for line in l1.split("\n"):
         line = line.rstrip()
         if line and line[-1] == ")":
@@ -212,8 +221,8 @@ def add_annot(page: PageObject, text_content: str, pos_params: dict[str, float],
     # to.textLines(l1, trim=0)
     can.drawText(to)
     if l2:
-        can.rect(canvas_width / 2 - annot_params["font_size"], 0, 0, canvas_height)
-        to2 = can.beginText(canvas_width // 2 + annot_params["font_size"], canvas_height - (1 + (max(0, extra_margin - 0.2))) * annot_params["font_size"])
+        can.rect(canvas_width / 2, 0, 0, canvas_height)
+        to2 = can.beginText(canvas_width / 2 + extra_margin * annot_params["font_size"], canvas_height - (1 + (max(0, extra_margin - 0.2))) * annot_params["font_size"])
         to2.setFont(annot_params["font_face"], annot_params["font_size"])
         to2.setLeading(line_height)
         for line in l2.split("\n"):
@@ -265,18 +274,18 @@ def load_rec_index(army_index_path: str, army_rules: list[Rule], detachments: di
                 Rule(detachment["name"] + " enhancements", content["associated_file"], army_pdf, parse_page_ref(detachment["enhancements"]))
             )
     if "armoury_full_pages" in content and content["armoury_full_pages"] is not None:
-        armoury_full_pages.append(Rule("extra rule", content["associated_file"], army_pdf, content["armoury_full_pages"]))
+        armoury_full_pages.append(Rule("extra rule", content["associated_file"], army_pdf, parse_page_ref(content["armoury_full_pages"])))
     if "armoury_half_pages" in content and content["armoury_half_pages"] is not None:
         for [start, end] in parse_page_ref(content["armoury_half_pages"]):
             for page_nb in range(start, end + 1):
                 armoury_half_pages.append(Datasheet("armoury", content["associated_file"], army_pdf, page_nb))
     for (id, page_nb) in content["datasheets"].items():
         datasheets[id] = Datasheet(id, content["associated_file"], army_pdf, page_nb)
-    if content["includes"] and content["includes"] is not None:
+    if "includes" in content and content["includes"] is not None:
         for include in content["includes"]:
             include_path = os.path.join(PDF_INDEX_DIR, include)
             load_rec_index(include_path, army_rules, detachments, armoury_full_pages, armoury_half_pages, datasheets, status_function, is_main=True)
-    if content["includes_allies"] and content["includes_allies"] is not None and is_main:
+    if "includes_allies" in content and content["includes_allies"] is not None and is_main:
         for include in content["includes_allies"]:
             include_path = os.path.join(PDF_INDEX_DIR, include)
             load_rec_index(include_path, army_rules, detachments, armoury_full_pages, armoury_half_pages, datasheets, status_function, is_main=False)
@@ -291,18 +300,20 @@ def parse_and_group_units(rest_of_the_list: str) -> list[Unit]:
     group = []
     group_id = None
     for match in re.finditer(UNIT_RE, rest_of_the_list):
+        # print(match)
         current = Unit(
             name=match.group("unit_name"),
             id=match.group("unit_name").strip().upper(),
             points=int(match.group("unit_points")),
             full_text=match.group(0).strip()
         )
-        if current.id != group_id and group_id is not None:
+        if current.id != group_id and group:
             fuse_group_into(group, units)
             group = []
         group.append(current)
         group_id = current.id
-    fuse_group_into(group, units)
+    if group:
+        fuse_group_into(group, units)
     return units
 
 def resolve_army_index_path_from_army_name(try_army_name: str) -> str:
@@ -559,15 +570,16 @@ def convert_list_to_pdf(list_content: str, output_path, features, annot_params, 
         }
         add_annot(output_pdf.get_page(current_pages-1),rest_of_the_list, pos_params, annot_params, "\n\n", "")
 
+    if features["list_mode"] == LIST_MODE_JUST_HEADER:
+        status_function("Adding a header with list info...")
+        add_annot(output_pdf.get_page(0), list_header, get_pos_params(annot_params, "header_army"), annot_params, "\n", "")
+
     # add army rule if needed
     if features["with_army_rule"]:
         for page_range in army_rule.page_ranges:
             status_function(f"Adding '{army_rule.id}' army rules (pages {page_range} from '{army_rule.origin}')...")
             output_pdf.append(fileobj=army_rule.pdf, pages=(page_range[0]-1, page_range[1]))
             current_pages += page_range[1] - (page_range[0]-1)
-        
-        if features["list_mode"] == LIST_MODE_JUST_HEADER:
-            add_annot(output_pdf.get_page(0), list_header, get_pos_params(annot_params, "header_army"), annot_params, "\n", "")
 
     # add detachment rule if needed
     if features["with_detachment_rule"]:
