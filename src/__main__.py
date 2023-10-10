@@ -254,9 +254,9 @@ def load_rec_index(army_index_path: str, army_rules: list[Rule], detachments: di
     with open(army_index_path, "r", encoding="utf-8") as army_index_file:
         content = yaml.load(army_index_file, yaml.Loader)
     army_pdf = PdfReader(content["associated_file"])
-    if "army_rule" in content and content["army_rule"] is not None:
+    if is_main and "army_rule" in content and content["army_rule"] is not None:
         army_rules.append(Rule(get_army_name(army_index_path), content["associated_file"], army_pdf, parse_page_ref(content["army_rule"])))
-    if "detachments" in content and content["detachments"] is not None:
+    if is_main and "detachments" in content and content["detachments"] is not None:
         for detachment in content["detachments"]:
             detachments[detachment["name"]] = Detachment(
                 detachment["name"], content["associated_file"],
@@ -267,8 +267,9 @@ def load_rec_index(army_index_path: str, army_rules: list[Rule], detachments: di
     if "armoury_full_pages" in content and content["armoury_full_pages"] is not None:
         armoury_full_pages.append(Rule("extra rule", content["associated_file"], army_pdf, content["armoury_full_pages"]))
     if "armoury_half_pages" in content and content["armoury_half_pages"] is not None:
-        for page_nb in content["armoury_half_pages"]:
-            armoury_half_pages.append(Datasheet("extra rule", content["associated_file"], army_pdf, page_nb))
+        for [start, end] in parse_page_ref(content["armoury_half_pages"]):
+            for page_nb in range(start, end + 1):
+                armoury_half_pages.append(Datasheet("armoury", content["associated_file"], army_pdf, page_nb))
     for (id, page_nb) in content["datasheets"].items():
         datasheets[id] = Datasheet(id, content["associated_file"], army_pdf, page_nb)
     if content["includes"] and content["includes"] is not None:
