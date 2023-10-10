@@ -264,18 +264,18 @@ def load_rec_index(army_index_path: str, army_rules: list[Rule], detachments: di
                 Rule(detachment["name"] + " stratagems", content["associated_file"], army_pdf, parse_page_ref(detachment["stratagems"])),
                 Rule(detachment["name"] + " enhancements", content["associated_file"], army_pdf, parse_page_ref(detachment["enhancements"]))
             )
-    if "armoury_full_pages" in content and content["armoury_full_pages"] is not None:
+    if content.get("armoury_full_pages", None):
         armoury_full_pages.append(Rule("extra rule", content["associated_file"], army_pdf, content["armoury_full_pages"]))
-    if "armoury_half_pages" in content and content["armoury_half_pages"] is not None:
+    if content.get("armoury_half_pages", None):
         for page_nb in content["armoury_half_pages"]:
             armoury_half_pages.append(Datasheet("extra rule", content["associated_file"], army_pdf, page_nb))
     for (id, page_nb) in content["datasheets"].items():
         datasheets[id] = Datasheet(id, content["associated_file"], army_pdf, page_nb)
-    if content["includes"] and content["includes"] is not None:
+    if content.get("includes", None):
         for include in content["includes"]:
             include_path = os.path.join(PDF_INDEX_DIR, include)
             load_rec_index(include_path, army_rules, detachments, armoury_full_pages, armoury_half_pages, datasheets, status_function, is_main=True)
-    if content["includes_allies"] and content["includes_allies"] is not None and is_main:
+    if content.get("includes_allies", None) and is_main:
         for include in content["includes_allies"]:
             include_path = os.path.join(PDF_INDEX_DIR, include)
             load_rec_index(include_path, army_rules, detachments, armoury_full_pages, armoury_half_pages, datasheets, status_function, is_main=False)
