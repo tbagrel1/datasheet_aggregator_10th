@@ -11,7 +11,7 @@ detachments:
     stratagems: [3, 4]
     enhancements: 5
 armoury_full_pages: null
-armoury_half_pages: 105
+armoury_half_pages: [105]
 datasheets:
   ABADDON THE DESPOILER: 7
   HAARKEN WORLDCLAIMER: 9

@@ -5,7 +5,7 @@ includes_allies: []
 army_rule: null
 detachments: []
 armoury_full_pages: null
-armoury_half_pages: 59
+armoury_half_pages: [59]
 datasheets:
   KRATOS: 1
   DEREDEO DREADNOUGHT: 3
