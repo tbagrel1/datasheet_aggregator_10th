@@ -26,7 +26,6 @@ LIST_HEADER_RATIO = 0.1
 LIST_HEADER_FONT_SIZE = 18
 LIST_MARGIN_RATIO = 0.1
 DATASHEET_ANNOT_EXTRA_MARGIN = 0.3
-PADDING_HALF_PAGE = (os.path.join("data", "pdf", "Space Marines.pdf"), 219)
 
 LIST_MODE_NOTHING = "nothing"
 LIST_MODE_JUST_HEADER = "just_header"
@@ -70,7 +69,7 @@ ARMY_SPEC_RE = (
     r"(?P<game_format>[^\n]+? \((?P<max_points>[0-9]+) points\))\n"
     r"(?P<detachment_rule>[^\n]+?))\n"
     r"\n\n"
-    r"(?P<rest>(?:.*\n)+\Z)"
+    r"(?P<rest>(?:.*\n?)+\Z)"
 )
 
 UNIT_RE = (
@@ -90,10 +89,10 @@ class Rule:
     id: str
     origin: str
     pdf: PdfReader
-    page_ranges: list[list[int]]
+    page_range: list[int] | None
 
     def __str__(self):
-        return f"pages {self.page_ranges} from '{self.origin}'"
+        return f"pages {self.page_range} from '{self.origin}'"
 
     def __repr__(self):
         return self.__str__()
@@ -117,11 +116,12 @@ class Datasheet:
     id: str
     origin: str
     pdf: PdfReader
-    page_nb: int
+    page_range: list[int]
     extra_text: str = ""
+    is_armory: bool = False
 
     def __str__(self):
-        return f"page {self.page_nb} from '{self.origin}'"
+        return f"pages {self.page_range} from '{self.origin}'"
 
     def __repr__(self):
         return self.__str__()
@@ -249,11 +249,13 @@ def get_army_name(army_index_path: str) -> str:
     return base
 
 
-def parse_page_ref(raw: Union[int, list[int]]) -> list[list[int]]:
+def parse_page_ref(raw: Union[int, list[int]], allow_none=False) -> list[int] | None:
     if isinstance(raw, int):
-        return [[raw, raw]]
+        return [raw, raw]
     elif isinstance(raw, list):
-        return [raw]
+        return raw
+    elif allow_none and raw is None:
+        return None
     else:
         raise Exception("Invalid format for page reference")
 
@@ -271,16 +273,14 @@ def load_rec_index(army_index_path: str, army_rules: list[Rule], detachments: di
                 detachment["name"], content["associated_file"],
                 Rule(detachment["name"] + " rule", content["associated_file"], army_pdf, parse_page_ref(detachment["rule"])),
                 Rule(detachment["name"] + " stratagems", content["associated_file"], army_pdf, parse_page_ref(detachment["stratagems"])),
-                Rule(detachment["name"] + " enhancements", content["associated_file"], army_pdf, parse_page_ref(detachment["enhancements"]))
+                Rule(detachment["name"] + " enhancements", content["associated_file"], army_pdf, parse_page_ref(detachment["enhancements"], allow_none=True))
             )
     if "armoury_full_pages" in content and content["armoury_full_pages"] is not None:
         armoury_full_pages.append(Rule("extra rule", content["associated_file"], army_pdf, parse_page_ref(content["armoury_full_pages"])))
     if "armoury_half_pages" in content and content["armoury_half_pages"] is not None:
-        for [start, end] in parse_page_ref(content["armoury_half_pages"]):
-            for page_nb in range(start, end + 1):
-                armoury_half_pages.append(Datasheet("armoury", content["associated_file"], army_pdf, page_nb))
-    for (id, page_nb) in content["datasheets"].items():
-        datasheets[id] = Datasheet(id, content["associated_file"], army_pdf, page_nb)
+        armoury_half_pages.append(Datasheet("armoury", content["associated_file"], army_pdf, parse_page_ref(content["armoury_half_pages"]), "", True))
+    for (id, page_range) in content["datasheets"].items():
+        datasheets[id] = Datasheet(id, content["associated_file"], army_pdf, parse_page_ref(page_range))
     if "includes" in content and content["includes"] is not None:
         for include in content["includes"]:
             include_path = os.path.join(PDF_INDEX_DIR, include)
@@ -576,26 +576,27 @@ def convert_list_to_pdf(list_content: str, output_path, features, annot_params, 
 
     # add army rule if needed
     if features["with_army_rule"]:
-        for page_range in army_rule.page_ranges:
-            status_function(f"Adding '{army_rule.id}' army rules (pages {page_range} from '{army_rule.origin}')...")
-            output_pdf.append(fileobj=army_rule.pdf, pages=(page_range[0]-1, page_range[1]))
-            current_pages += page_range[1] - (page_range[0]-1)
+        page_range = army_rule.page_range
+        status_function(f"Adding '{army_rule.id}' army rules (pages {page_range} from '{army_rule.origin}')...")
+        output_pdf.append(fileobj=army_rule.pdf, pages=(page_range[0]-1, page_range[1]))
+        current_pages += page_range[1] - (page_range[0]-1)
 
     # add detachment rule if needed
     if features["with_detachment_rule"]:
-        for page_range in detachment.rule.page_ranges:
-            status_function(f"Adding '{detachment.rule.id}' detachment rules (pages {page_range} from '{detachment.rule.origin}')...")
-            output_pdf.append(fileobj=detachment.rule.pdf, pages=(page_range[0]-1, page_range[1]))
-            current_pages += page_range[1] - (page_range[0]-1)
+        page_range = detachment.rule.page_range
+        status_function(f"Adding '{detachment.rule.id}' detachment rules (pages {page_range} from '{detachment.rule.origin}')...")
+        output_pdf.append(fileobj=detachment.rule.pdf, pages=(page_range[0]-1, page_range[1]))
+        current_pages += page_range[1] - (page_range[0]-1)
     # add detachment stratagems if needed
     if features["with_detachment_stratagems"]:
-        for page_range in detachment.stratagems.page_ranges:
-            status_function(f"Adding '{detachment.stratagems.id}' detachment stratagems (pages {page_range} from '{detachment.stratagems.origin}')...")
-            output_pdf.append(fileobj=detachment.stratagems.pdf, pages=(page_range[0]-1, page_range[1]))
-            current_pages += page_range[1] - (page_range[0]-1)
+        page_range = detachment.stratagems.page_range
+        status_function(f"Adding '{detachment.stratagems.id}' detachment stratagems (pages {page_range} from '{detachment.stratagems.origin}')...")
+        output_pdf.append(fileobj=detachment.stratagems.pdf, pages=(page_range[0]-1, page_range[1]))
+        current_pages += page_range[1] - (page_range[0]-1)
     # add detachment enhancements if needed
     if features["with_detachment_enhancements"]:
-        for page_range in detachment.enhancements.page_ranges:
+        page_range = detachment.enhancements.page_range
+        if page_range is not None:
             status_function(f"Adding '{detachment.enhancements.id}' detachment enhancements (pages {page_range} from '{detachment.enhancements.origin}')...")
             output_pdf.append(fileobj=detachment.enhancements.pdf, pages=(page_range[0]-1, page_range[1]))
             current_pages += page_range[1] - (page_range[0]-1)
@@ -611,10 +612,10 @@ def convert_list_to_pdf(list_content: str, output_path, features, annot_params, 
             raise Exception(f"No datasheet found for '{unit.id}'. Loaded datasheets are {set(id for id in datasheet_dict)}. Exiting")
         used_origins.add(datasheet.origin)
         datasheet.extra_text = unit.full_text
+        if not features["with_unit_comp"]:
+            # remove unit comp if the option hasn't been set
+            datasheet.page_range = [datasheet.page_range[0], datasheet.page_range[0]]
         datasheets_to_print.append(datasheet)
-        if features["with_unit_comp"]:
-            # add the unit composition sheet as a pseudo-datasheet
-            datasheets_to_print.append(Datasheet(datasheet.id, datasheet.origin, datasheet.pdf, datasheet.page_nb + 1, datasheet.extra_text))
 
     # add extra rule pages if needed
     if features["with_armoury"]:
@@ -622,37 +623,49 @@ def convert_list_to_pdf(list_content: str, output_path, features, annot_params, 
         for extra_pages in armoury_full_pages:
             if extra_pages.origin not in used_origins:
                 continue
-            for page_range in extra_pages.page_ranges:
-                status_function(f"Adding extra rule (pages {page_range[0]-page_range[1]} from '{extra_pages.origin}')...")
-                output_pdf.append(fileobj=extra_pages.pdf, pages=(page_range[0]-1, page_range[1]))
-                current_pages += page_range[1] - (page_range[0]-1)
+            page_range = extra_pages.page_range
+            status_function(f"Adding extra rule (pages {page_range[0]-page_range[1]} from '{extra_pages.origin}')...")
+            output_pdf.append(fileobj=extra_pages.pdf, pages=(page_range[0]-1, page_range[1]))
+            current_pages += page_range[1] - (page_range[0]-1)
 
         # now we add the half ones as pseudo-datasheets to be printed before the actual ones
-        armoury_half_pages_to_include = [extra_page for extra_page in armoury_half_pages if extra_page.origin in used_origins]
-        if len(armoury_half_pages_to_include) % 2 == 1 and features["enable_armoury_padding"]:
-            # pad to start datasheets on a new page
-            armoury_half_pages_to_include.append(Datasheet("padding", PADDING_HALF_PAGE[0], PdfReader(PADDING_HALF_PAGE[0]), PADDING_HALF_PAGE[1]))
+        armoury_half_pages_to_include = [extra_pages for extra_pages in armoury_half_pages if extra_pages.origin in used_origins]
         datasheets_to_print = armoury_half_pages_to_include + datasheets_to_print
 
     # start bi-modal printing
     next_is_top = True
+    prev_is_armory = True
     for datasheet in datasheets_to_print:
         status_function(f"Adding '{datasheet.id}' ({datasheet})...")
-        if next_is_top:
-            output_pdf.add_blank_page(ref_box.width, ref_box.height)
-            current_pages += 1
-            current_page = output_pdf.get_page(current_pages - 1)
-            pdf_page = datasheet.pdf.pages[datasheet.page_nb - 1]
-            current_page.merge_transformed_page(pdf_page, Transformation().scale(ref_box.width / pdf_page.mediabox.width).translate(0, ref_box.height // 2), over=True, expand=False)
-            if features["with_unit_annot"] and datasheet.extra_text:
-                add_annot(current_page, datasheet.extra_text, get_pos_params(annot_params, "top"), annot_params, "\n", "  • ")
-            next_is_top = False
-        else:
-            pdf_page = datasheet.pdf.pages[datasheet.page_nb - 1]
-            current_page.merge_transformed_page(pdf_page, Transformation().scale(ref_box.width / pdf_page.mediabox.width).translate(0, 0), over=True, expand=False)
-            if features["with_unit_annot"] and datasheet.extra_text and not features["with_unit_comp"]:
-                add_annot(current_page, datasheet.extra_text, get_pos_params(annot_params, "bottom"), annot_params, "\n", "  • ")
+        n = datasheet.page_range[1] - datasheet.page_range[0] + 1
+        # force current datasheet to start on a new page if the current datasheet will be split over >=2 pages (and isn't armory page)
+        if n > 1 and not datasheet.is_armory:
             next_is_top = True
+        # force current datasheet to start on a new page if prev datasheet was the last armory page
+        if prev_is_armory and not datasheet.is_armory and features["enable_armoury_padding"]:
+            next_is_top = True
+
+        for page_nb in range(datasheet.page_range[0], datasheet.page_range[1] + 1):
+            if next_is_top:
+                output_pdf.add_blank_page(ref_box.width, ref_box.height)
+                current_pages += 1
+                current_page = output_pdf.get_page(current_pages - 1)
+                pdf_page = datasheet.pdf.pages[page_nb - 1]
+                current_page.merge_transformed_page(pdf_page, Transformation().scale(ref_box.width / pdf_page.mediabox.width).translate(0, ref_box.height // 2), over=True, expand=False)
+                if features["with_unit_annot"] and datasheet.extra_text:
+                    add_annot(current_page, datasheet.extra_text, get_pos_params(annot_params, "top"), annot_params, "\n", "  • ")
+                next_is_top = False
+            else:
+                pdf_page = datasheet.pdf.pages[page_nb - 1]
+                current_page.merge_transformed_page(pdf_page, Transformation().scale(ref_box.width / pdf_page.mediabox.width).translate(0, 0), over=True, expand=False)
+                if features["with_unit_annot"] and datasheet.extra_text and not features["with_unit_comp"]:
+                    add_annot(current_page, datasheet.extra_text, get_pos_params(annot_params, "bottom"), annot_params, "\n", "  • ")
+                next_is_top = True
+
+        # force next datasheet to start on a new page if the current datasheet has been split on >=2 pages (and isn't armory page)
+        if n > 1 and not datasheet.is_armory:
+            next_is_top = True
+        prev_is_armory = datasheet.is_armory
 
     # Write PDF and we are done!
     status_function(f"Writing output PDF to '{output_path}'...")

@@ -1,6 +1,9 @@
 # Created by https://www.toptal.com/developers/gitignore/api/python,visualstudiocode,pycharm,linux,windows
 # Edit at https://www.toptal.com/developers/gitignore?templates=python,visualstudiocode,pycharm,linux,windows
 
+data/pdf/Space Marines.pdf
+data/pdf_index/transform.py
+
 ### Linux ###
 *~
 .direnv

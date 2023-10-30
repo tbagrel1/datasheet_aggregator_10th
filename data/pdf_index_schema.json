@@ -67,6 +67,7 @@
           "enhancements": {
             "description": "page number of page range that contains the detachement enhancements",
             "anyOf": [
+              { "type": "null" },
               { "type": "integer" },
               {
                 "type": "array",
@@ -102,7 +103,15 @@
     "datasheets": {
       "description": "dictionary of the army datasheets",
       "type": "object",
-      "additionalProperties": { "type": "integer" }
+      "additionalProperties": {
+        "anyOf": [
+          { "type": "integer" },
+          {
+            "type": "array",
+            "prefixItems": [{ "type": "integer" }, { "type": "integer" }]
+          }
+        ]
+      }
     }
   },
   "required": ["associated_file", "datasheets"]

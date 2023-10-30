@@ -7,5 +7,5 @@ detachments: []
 armoury_full_pages: null
 armoury_half_pages: null
 datasheets:
-  ASTRAEUS: 1
-  THUNDERHAWK GUNSHIP: 3
+  ASTRAEUS: [1, 2]
+  THUNDERHAWK GUNSHIP: [3, 4]

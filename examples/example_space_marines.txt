@@ -14,7 +14,7 @@ Captain in Gravis Armour (105 points)
     1x Relic fist
   • Enhancement: Artificer Armour
 
-Primaris Lieutenant (100 points)
+Lieutenant (100 points)
   • 1x Heavy Bolt Pistol
     1x Master-crafted bolt rifle
     1x Power fist
