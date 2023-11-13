@@ -32,9 +32,9 @@ LIST_MODE_JUST_HEADER = "just_header"
 LIST_MODE_FULL = "full"
 
 DEFAULT_ANNOT_PARAMS = {
-    "header_army_x": 157,
+    "header_army_x": 0,
     "header_army_y": 477,
-    "header_army_w": 200,
+    "header_army_w": 157,
     "header_army_h": 61,
     "top_x": 157,
     "top_y": 445,
@@ -60,7 +60,7 @@ DEFAULT_FEATURES = {
     "with_unit_comp": False,
     "with_unit_annot": True,
     "list_mode": LIST_MODE_FULL,
-    "enable_armoury_padding": False
+    "with_armoury_padding": False
 }
 
 ARMY_SPEC_RE = (
@@ -118,7 +118,7 @@ class Datasheet:
     pdf: PdfReader
     page_range: list[int]
     extra_text: str = ""
-    is_armory: bool = False
+    is_armoury: bool = False
 
     def __str__(self):
         return f"pages {self.page_range} from '{self.origin}'"
@@ -350,7 +350,13 @@ def get_pos_params(annot_params: dict[str, Any], region: str) -> dict[str, float
 @click.option("--with-unit-comp/--without-unit-comp", default=DEFAULT_FEATURES["with_unit_comp"])
 @click.option("--with-unit-annot/--without-unit-annot", default=DEFAULT_FEATURES["with_unit_annot"])
 @click.option("--list-mode", "-l", type=click.Choice([LIST_MODE_FULL, LIST_MODE_JUST_HEADER, LIST_MODE_NOTHING]), default=DEFAULT_FEATURES["list_mode"])
-@click.option("--enable-armoury-padding/--disable-armoury-padding", default=DEFAULT_FEATURES["enable_armoury_padding"])
+@click.option("--with-armoury-padding/--without-armoury-padding", default=DEFAULT_FEATURES["with_armoury_padding"])
+@click.option("--annot-font-face", type=str, default=DEFAULT_ANNOT_PARAMS["font_face"])
+@click.option("--annot-font-size", type=float, default=DEFAULT_ANNOT_PARAMS["font_size"])
+@click.option("--annot-line-spacing", type=float, default=DEFAULT_ANNOT_PARAMS["line_spacing"])
+@click.option("--annot-color-fg", type=str, default=DEFAULT_ANNOT_PARAMS["color_fg"])
+@click.option("--annot-color-bg", type=str, default=DEFAULT_ANNOT_PARAMS["color_bg"])
+@click.option("--annot-color-br", type=str, default=DEFAULT_ANNOT_PARAMS["color_br"])
 @click.option("--annot-header-army-x", type=float, default=DEFAULT_ANNOT_PARAMS["header_army_x"])
 @click.option("--annot-header-army-y", type=float, default=DEFAULT_ANNOT_PARAMS["header_army_y"])
 @click.option("--annot-header-army-w", type=float, default=DEFAULT_ANNOT_PARAMS["header_army_w"])
@@ -363,12 +369,6 @@ def get_pos_params(annot_params: dict[str, Any], region: str) -> dict[str, float
 @click.option("--annot-bottom-y", type=float, default=DEFAULT_ANNOT_PARAMS["bottom_y"])
 @click.option("--annot-bottom-w", type=float, default=DEFAULT_ANNOT_PARAMS["bottom_w"])
 @click.option("--annot-bottom-h", type=float, default=DEFAULT_ANNOT_PARAMS["bottom_h"])
-@click.option("--annot-font-face", type=str, default=DEFAULT_ANNOT_PARAMS["font_face"])
-@click.option("--annot-font-size", type=float, default=DEFAULT_ANNOT_PARAMS["font_size"])
-@click.option("--annot-line-spacing", type=float, default=DEFAULT_ANNOT_PARAMS["line_spacing"])
-@click.option("--annot-color-fg", type=str, default=DEFAULT_ANNOT_PARAMS["color_fg"])
-@click.option("--annot-color-bg", type=str, default=DEFAULT_ANNOT_PARAMS["color_bg"])
-@click.option("--annot-color-br", type=str, default=DEFAULT_ANNOT_PARAMS["color_br"])
 def main(**params):
     if params["nogui_input_path"] is None:
         gui(
@@ -423,6 +423,7 @@ def gui(features, annot_params):
     textbox_input_text = ScrolledText(frame, wrap=tk.WORD, state=tk.DISABLED, bg=annot_params["color_bg"])
     lbl_output = ttk.Label(frame, text="Output file (PDF):")
     entry_output_path = ttk.Entry(frame, textvariable=output_path_sv)
+    option_frame = ttk.Frame(frame)
     btn_generate = ttk.Button(frame, text="Generate")
     lbl_status = ttk.Label(frame, textvariable=status_sv)
 
@@ -430,10 +431,95 @@ def gui(features, annot_params):
     rb_input_mode_path.grid(row=1, column=0, sticky="nsew") ; entry_input_path.grid(row=1, column=1, columnspan=2, sticky="nsew") ; btn_choose_input.grid(row=1, column=3, sticky="nsew")
     rb_input_mode_text.grid(row=2, column=0, sticky="nsew") ; textbox_input_text.grid(row=2, column=1, columnspan=3, sticky="nsew")
     lbl_output.grid(row=3, column=0, columnspan=1, sticky="nsew") ; entry_output_path.grid(row=3, column=1, columnspan=3, sticky="nsew")
-    btn_generate.grid(row=4, column=1, columnspan=2, sticky="nsew")
-    lbl_status.grid(row=5, column=0, columnspan=4, sticky="nsew")
-    
-    active_widgets = [rb_input_mode_path, btn_choose_input, rb_input_mode_text, textbox_input_text, entry_output_path, btn_generate]
+    option_frame.grid(row=4, column=0, columnspan=4, sticky="nsew")
+    btn_generate.grid(row=5, column=1, columnspan=2, sticky="nsew")
+    lbl_status.grid(row=6, column=0, columnspan=4, sticky="nsew")
+
+    ###########################################################################
+    # @click.option("--with-army-rule/--without-army-rule", default=DEFAULT_FEATURES["with_army_rule"])
+    # @click.option("--with-detachment-rule/--without-detachment-rule", default=DEFAULT_FEATURES["with_detachment_rule"])
+    # @click.option("--with-detachment-stratagems/--without-detachment-stratagems", default=DEFAULT_FEATURES["with_detachment_stratagems"])
+    # @click.option("--with-detachment-enhancements/--without-detachment-enhancements", default=DEFAULT_FEATURES["with_detachment_enhancements"])
+    # @click.option("--with-armoury/--without-armoury", default=DEFAULT_FEATURES["with_armoury"])
+    # @click.option("--with-armoury-padding/--without-armoury-padding", default=DEFAULT_FEATURES["with_armoury_padding"])
+    # @click.option("--with-unit-annot/--without-unit-annot", default=DEFAULT_FEATURES["with_unit_annot"])
+    # @click.option("--with-unit-comp/--without-unit-comp", default=DEFAULT_FEATURES["with_unit_comp"])
+    # @click.option("--list-mode", "-l", type=click.Choice([LIST_MODE_FULL, LIST_MODE_JUST_HEADER, LIST_MODE_NOTHING]), default=DEFAULT_FEATURES["list_mode"])
+    # @click.option("--annot-font-size", type=float, default=DEFAULT_ANNOT_PARAMS["font_size"])
+    # @click.option("--annot-line-spacing", type=float, default=DEFAULT_ANNOT_PARAMS["line_spacing"])
+    # @click.option("--annot-font-face", type=str, default=DEFAULT_ANNOT_PARAMS["font_face"])
+    # @click.option("--annot-color-fg", type=str, default=DEFAULT_ANNOT_PARAMS["color_fg"])
+    # @click.option("--annot-color-bg", type=str, default=DEFAULT_ANNOT_PARAMS["color_bg"])
+    # @click.option("--annot-color-br", type=str, default=DEFAULT_ANNOT_PARAMS["color_br"])
+    to_bool = lambda x: True if x == 1 else False
+    from_bool = lambda x: 1 if x else 0
+
+    with_army_rule_iv = tk.IntVar(); with_army_rule_iv.set(from_bool(features["with_army_rule"]))
+    with_detachment_rule_iv = tk.IntVar(); with_detachment_rule_iv.set(from_bool(features["with_detachment_rule"]))
+    with_detachment_stratagems_iv = tk.IntVar(); with_detachment_stratagems_iv.set(from_bool(features["with_detachment_stratagems"]))
+    with_detachment_enhancements_iv = tk.IntVar(); with_detachment_enhancements_iv.set(from_bool(features["with_detachment_enhancements"]))
+    with_armoury_iv = tk.IntVar(); with_armoury_iv.set(from_bool(features["with_armoury"]))
+    with_armoury_padding_iv = tk.IntVar(); with_armoury_padding_iv.set(from_bool(features["with_armoury_padding"]))
+    with_unit_annot_iv = tk.IntVar(); with_unit_annot_iv.set(from_bool(features["with_unit_annot"]))
+    with_unit_comp_iv = tk.IntVar(); with_unit_comp_iv.set(from_bool(features["with_unit_comp"]))
+    list_mode_sv = tk.StringVar(); list_mode_sv.set(features["list_mode"])
+    font_face_sv = tk.StringVar(); font_face_sv.set(str(annot_params["font_face"]))
+    font_size_sv = tk.StringVar(); font_size_sv.set(str(annot_params["font_size"]))
+    line_spacing_sv = tk.StringVar(); line_spacing_sv.set(str(annot_params["line_spacing"]))
+    color_fg_sv = tk.StringVar(); color_fg_sv.set(annot_params["color_fg"])
+    color_bg_sv = tk.StringVar(); color_bg_sv.set(annot_params["color_bg"])
+    color_br_sv = tk.StringVar(); color_br_sv.set(annot_params["color_br"])
+
+    cb_with_army_rule = ttk.Checkbutton(option_frame, text="Army rule", variable=with_army_rule_iv, onvalue=1, offvalue=0)
+    cb_with_detachment_rule = ttk.Checkbutton(option_frame, text="Detachement rule", variable=with_detachment_rule_iv, onvalue=1, offvalue=0)
+    cb_with_detachment_stratagems = ttk.Checkbutton(option_frame, text="Detachement stratagems", variable=with_detachment_stratagems_iv, onvalue=1, offvalue=0)
+    cb_with_detachment_enhancements = ttk.Checkbutton(option_frame, text="Detachement enhancements", variable=with_detachment_enhancements_iv, onvalue=1, offvalue=0)
+    cb_with_armoury = ttk.Checkbutton(option_frame, text="Armoury (if available)", variable=with_armoury_iv, onvalue=1, offvalue=0)
+    cb_with_armoury_padding = ttk.Checkbutton(option_frame, text="Half page padding for armoury", variable=with_armoury_padding_iv, onvalue=1, offvalue=0)
+    cb_with_unit_annot = ttk.Checkbutton(option_frame, text="Unit comp. & wargear annotations", variable=with_unit_annot_iv, onvalue=1, offvalue=0)
+    cb_with_unit_comp = ttk.Checkbutton(option_frame, text="Verso card face with unit comp. and leaders", variable=with_unit_comp_iv, onvalue=1, offvalue=0)
+    lbl_list_mode = ttk.Label(option_frame, text="List recap: ")
+    rb_list_mode_full = ttk.Radiobutton(option_frame, text="full", variable=list_mode_sv, value=LIST_MODE_FULL)
+    rb_list_mode_just_header = ttk.Radiobutton(option_frame, text="header with list spec", variable=list_mode_sv, value=LIST_MODE_JUST_HEADER)
+    rb_list_mode_nothing = ttk.Radiobutton(option_frame, text="none", variable=list_mode_sv, value=LIST_MODE_NOTHING)
+
+    lbl_font_face = ttk.Label(option_frame, text="Font face: "); entry_font_face = ttk.Entry(option_frame, textvariable=font_face_sv)
+    lbl_font_size = ttk.Label(option_frame, text="Font size: "); entry_font_size = ttk.Entry(option_frame, textvariable=font_size_sv)
+    lbl_line_spacing = ttk.Label(option_frame, text="Line spacing: "); entry_line_spacing = ttk.Entry(option_frame, textvariable=line_spacing_sv)
+    lbl_color_fg = ttk.Label(option_frame, text="Foreground color: "); entry_color_fg = ttk.Entry(option_frame, textvariable=color_fg_sv)
+    lbl_color_bg = ttk.Label(option_frame, text="Background color: "); entry_color_bg = ttk.Entry(option_frame, textvariable=color_bg_sv)
+    lbl_color_br = ttk.Label(option_frame, text="Border color: "); entry_color_br = ttk.Entry(option_frame, textvariable=color_br_sv)
+
+    cb_with_army_rule.grid(row=0, column=0, columnspan=2, sticky="nsew")
+    cb_with_detachment_rule.grid(row=1, column=0, columnspan=2, sticky="nsew")
+    cb_with_detachment_stratagems.grid(row=2, column=0, columnspan=2, sticky="nsew")
+    cb_with_detachment_enhancements.grid(row=3, column=0, columnspan=2, sticky="nsew")
+
+    cb_with_armoury.grid(row=0, column=2, columnspan=2, sticky="nsew")
+    cb_with_armoury_padding.grid(row=1, column=2, columnspan=2, sticky="nsew")
+    cb_with_unit_annot.grid(row=2, column=2, columnspan=2, sticky="nsew")
+    cb_with_unit_comp.grid(row=3, column=2, columnspan=2, sticky="nsew")
+
+    lbl_list_mode.grid(row=4, column=0, sticky="nsew")
+    rb_list_mode_full.grid(row=4, column=1, sticky="nsew")
+    rb_list_mode_just_header.grid(row=4, column=2, sticky="nsew")
+    rb_list_mode_nothing.grid(row=4, column=3, sticky="nsew")
+
+    lbl_color_fg.grid(row=5, column=0, columnspan=1, sticky="nsew"); entry_color_fg.grid(row=5, column=1, columnspan=1, sticky="nsew")
+    lbl_color_bg.grid(row=6, column=0, columnspan=1, sticky="nsew"); entry_color_bg.grid(row=6, column=1, columnspan=1, sticky="nsew")
+    lbl_color_br.grid(row=7, column=0, columnspan=1, sticky="nsew"); entry_color_br.grid(row=7, column=1, columnspan=1, sticky="nsew")
+
+    lbl_font_face.grid(row=5, column=2, columnspan=1, sticky="nsew"); entry_font_face.grid(row=5, column=3, columnspan=1, sticky="nsew")
+    lbl_font_size.grid(row=6, column=2, columnspan=1, sticky="nsew"); entry_font_size.grid(row=6, column=3, columnspan=1, sticky="nsew")
+    lbl_line_spacing.grid(row=7, column=2, columnspan=1, sticky="nsew"); entry_line_spacing.grid(row=7, column=3, columnspan=1, sticky="nsew")
+
+    active_widgets = [
+        rb_input_mode_path, btn_choose_input, rb_input_mode_text, textbox_input_text, entry_output_path, btn_generate,
+        cb_with_army_rule, cb_with_detachment_rule, cb_with_detachment_stratagems, cb_with_detachment_enhancements,
+        cb_with_armoury, cb_with_armoury_padding, cb_with_unit_annot, cb_with_unit_comp,
+        rb_list_mode_full, rb_list_mode_just_header, rb_list_mode_nothing,
+        entry_font_face, entry_font_size, entry_line_spacing, entry_color_fg, entry_color_bg, entry_color_br
+    ]
 
     def with_temp_enabled(widget, f):
         widget.configure(state=tk.NORMAL)
@@ -465,6 +551,39 @@ def gui(features, annot_params):
         status_sv.set("Processing...")
         for w in active_widgets:
             w.configure(state=tk.DISABLED)
+
+        # @click.option("--with-army-rule/--without-army-rule", default=DEFAULT_FEATURES["with_army_rule"])
+        # @click.option("--with-detachment-rule/--without-detachment-rule", default=DEFAULT_FEATURES["with_detachment_rule"])
+        # @click.option("--with-detachment-stratagems/--without-detachment-stratagems", default=DEFAULT_FEATURES["with_detachment_stratagems"])
+        # @click.option("--with-detachment-enhancements/--without-detachment-enhancements", default=DEFAULT_FEATURES["with_detachment_enhancements"])
+        # @click.option("--with-armoury/--without-armoury", default=DEFAULT_FEATURES["with_armoury"])
+        # @click.option("--with-armoury-padding/--without-armoury-padding", default=DEFAULT_FEATURES["with_armoury_padding"])
+        # @click.option("--with-unit-annot/--without-unit-annot", default=DEFAULT_FEATURES["with_unit_annot"])
+        # @click.option("--with-unit-comp/--without-unit-comp", default=DEFAULT_FEATURES["with_unit_comp"])
+        # @click.option("--list-mode", "-l", type=click.Choice([LIST_MODE_FULL, LIST_MODE_JUST_HEADER, LIST_MODE_NOTHING]), default=DEFAULT_FEATURES["list_mode"])
+        # @click.option("--annot-font-size", type=float, default=DEFAULT_ANNOT_PARAMS["font_size"])
+        # @click.option("--annot-line-spacing", type=float, default=DEFAULT_ANNOT_PARAMS["line_spacing"])
+        # @click.option("--annot-font-face", type=str, default=DEFAULT_ANNOT_PARAMS["font_face"])
+        # @click.option("--annot-color-fg", type=str, default=DEFAULT_ANNOT_PARAMS["color_fg"])
+        # @click.option("--annot-color-bg", type=str, default=DEFAULT_ANNOT_PARAMS["color_bg"])
+        # @click.option("--annot-color-br", type=str, default=DEFAULT_ANNOT_PARAMS["color_br"])
+
+        features["with_army_rule"] = to_bool(with_army_rule_iv.get())
+        features["with_detachment_rule"] = to_bool(with_detachment_rule_iv.get())
+        features["with_detachment_stratagems"] = to_bool(with_detachment_stratagems_iv.get())
+        features["with_detachment_enhancements"] = to_bool(with_detachment_enhancements_iv.get())
+        features["with_armoury"] = to_bool(with_armoury_iv.get())
+        features["with_armoury_padding"] = to_bool(with_armoury_padding_iv.get())
+        features["with_unit_annot"] = to_bool(with_unit_annot_iv.get())
+        features["with_unit_comp"] = to_bool(with_unit_comp_iv.get())
+        features["list_mode"] = list_mode_sv.get()
+        annot_params["font_face"] = font_face_sv.get()
+        annot_params["font_size"] = float(font_size_sv.get())
+        annot_params["line_spacing"] = float(line_spacing_sv.get())
+        annot_params["color_fg"] = color_fg_sv.get()
+        annot_params["color_bg"] = color_bg_sv.get()
+        annot_params["color_br"] = color_br_sv.get()
+
         try:
             if input_mode_choice_sv.get() == "file":
                 with open(input_path_sv.get(), "r", encoding="utf-8") as input_file:
@@ -570,10 +689,6 @@ def convert_list_to_pdf(list_content: str, output_path, features, annot_params, 
         }
         add_annot(output_pdf.get_page(current_pages-1),rest_of_the_list, pos_params, annot_params, "\n\n", "")
 
-    if features["list_mode"] == LIST_MODE_JUST_HEADER:
-        status_function("Adding a header with list info...")
-        add_annot(output_pdf.get_page(0), list_header, get_pos_params(annot_params, "header_army"), annot_params, "\n", "")
-
     # add army rule if needed
     if features["with_army_rule"]:
         page_range = army_rule.page_range
@@ -634,15 +749,15 @@ def convert_list_to_pdf(list_content: str, output_path, features, annot_params, 
 
     # start bi-modal printing
     next_is_top = True
-    prev_is_armory = True
+    prev_is_armoury = True
     for datasheet in datasheets_to_print:
         status_function(f"Adding '{datasheet.id}' ({datasheet})...")
         n = datasheet.page_range[1] - datasheet.page_range[0] + 1
-        # force current datasheet to start on a new page if the current datasheet will be split over >=2 pages (and isn't armory page)
-        if n > 1 and not datasheet.is_armory:
+        # force current datasheet to start on a new page if the current datasheet will be split over >=2 pages (and isn't armoury page)
+        if n > 1 and not datasheet.is_armoury:
             next_is_top = True
-        # force current datasheet to start on a new page if prev datasheet was the last armory page
-        if prev_is_armory and not datasheet.is_armory and features["enable_armoury_padding"]:
+        # force current datasheet to start on a new page if prev datasheet was the last armoury page
+        if prev_is_armoury and not datasheet.is_armoury and features["with_armoury_padding"]:
             next_is_top = True
 
         for page_nb in range(datasheet.page_range[0], datasheet.page_range[1] + 1):
@@ -662,10 +777,14 @@ def convert_list_to_pdf(list_content: str, output_path, features, annot_params, 
                     add_annot(current_page, datasheet.extra_text, get_pos_params(annot_params, "bottom"), annot_params, "\n", "  • ")
                 next_is_top = True
 
-        # force next datasheet to start on a new page if the current datasheet has been split on >=2 pages (and isn't armory page)
-        if n > 1 and not datasheet.is_armory:
+        # force next datasheet to start on a new page if the current datasheet has been split on >=2 pages (and isn't armoury page)
+        if n > 1 and not datasheet.is_armoury:
             next_is_top = True
-        prev_is_armory = datasheet.is_armory
+        prev_is_armoury = datasheet.is_armoury
+
+    if features["list_mode"] == LIST_MODE_JUST_HEADER:
+        status_function("Adding a header with list info...")
+        add_annot(output_pdf.get_page(0), list_header, get_pos_params(annot_params, "header_army"), annot_params, "\n", "")
 
     # Write PDF and we are done!
     status_function(f"Writing output PDF to '{output_path}'...")
