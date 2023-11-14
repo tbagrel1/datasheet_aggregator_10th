@@ -1,0 +1,55 @@
+Firestorm (630 Points)
+
+Space Marines
+Firestorm Assault Force
+Incursion (1000 Points)
+
+CHARACTERS
+
+Apothecary Biologis (55 Points)
+    • Warlord
+    • 1x Absolvor bolt pistol
+      1x Close combat weapon
+
+OTHER DATASHEETS
+
+Aggressor Squad (220 Points)
+    • 1x Aggressor Sergeant
+        • 1x Auto boltstorm gauntlets
+          1x Fragstorm grenade launcher
+          1x Twin power fists
+    • 5x Aggressor
+        • 5x Auto boltstorm gauntlets
+          5x Fragstorm grenade launcher
+          5x Twin power fists
+
+Eradicator Squad (190 Points)
+    • 1x Eradicator Sergeant
+        • 1x Bolt pistol
+          1x Close combat weapon
+          1x Melta rifle
+    • 5x Eradicator
+        • 5x Bolt pistol
+          5x Close combat weapon
+          3x Melta rifle
+          2x Multi-melta
+
+Inceptor Squad (110 Points)
+    • 1x Inceptor Sergeant
+        • 1x Close combat weapon
+          1x Plasma exterminators
+    • 2x Inceptor
+        • 2x Close combat weapon
+          2x Plasma exterminators
+
+Scout Squad (55 Points)
+    • 1x Scout Sergeant
+        • 1x Bolt pistol
+          1x Boltgun
+          1x Close combat weapon
+    • 4x Scout
+        • 4x Bolt pistol
+          4x Boltgun
+          4x Close combat weapon
+
+Exported with App Version: v1.7.0 (23), Data Version: v304
