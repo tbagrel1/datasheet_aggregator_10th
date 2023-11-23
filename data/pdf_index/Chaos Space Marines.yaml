@@ -5,6 +5,7 @@ includes:
 includes_allies:
   - 'Chaos Knights.yaml'
   - 'Chaos Daemons.yaml'
+  - 'Thousand Sons.yaml'
 army_rule: 1
 detachments:
   - name: Slaves to Darkness
