@@ -63,7 +63,16 @@ DEFAULT_FEATURES = {
     "with_armoury_padding": False
 }
 
-ARMY_SPEC_RE = (
+ARMY_SPEC_RE_IPHONE = (
+    r"^(?P<list_header>(?P<list_name>[^\n]+?) \((?P<total_points>[0-9]+) Points\)\n\n"
+    r"(?P<raw_army_rule>[^\n]+?(?:\n[^\n]+?)?)\n"
+    r"(?P<detachment_rule>[^\n]+?))\n"
+    r"(?P<game_format>[^\n]+? \((?P<max_points>[0-9]+) Points\))\n"
+    r"\n"
+    r"(?P<rest>(?:.*\n?)+\Z)"
+)
+
+ARMY_SPEC_RE_ANDROID = (
     r"^(?P<list_header>(?P<list_name>[^\n]+?) \((?P<total_points>[0-9]+) points\)\n"
     r"(?P<raw_army_rule>[^\n]+?(?:\n[^\n]+?)?)\n"
     r"(?P<game_format>[^\n]+? \((?P<max_points>[0-9]+) points\))\n"
@@ -72,8 +81,9 @@ ARMY_SPEC_RE = (
     r"(?P<rest>(?:.*\n?)+\Z)"
 )
 
+
 UNIT_RE = (
-    r"(?P<unit_name>[^\n]+?) \((?P<unit_points>[0-9]+) points\)\n"
+    r"(?P<unit_name>[^\n]+?) \((?P<unit_points>[0-9]+) [Pp]oints\)\n"
     r"(?P<wargear>(?:  [^\n]*?(?:\n|\Z))+)"
 )
 
@@ -621,7 +631,12 @@ def convert_list_to_pdf(list_content: str, output_path, features, annot_params, 
     _annot_params["color_br"] = convert_color(annot_params["color_br"])
     annot_params = _annot_params
 
-    list_match = re.search(ARMY_SPEC_RE, list_content)
+
+    list_match = re.search(ARMY_SPEC_RE_ANDROID, list_content)
+    if list_match is None:
+        print("failed to load Android export, trying Iphone export")
+        list_match = re.search(ARMY_SPEC_RE_IPHONE, list_content)
+    
     if list_match is None:
         raise Exception("Army list doesn't match the expected format.")
     
