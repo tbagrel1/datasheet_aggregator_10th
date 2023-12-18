@@ -1,0 +1,45 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/tbagrel1/datasheet_aggregator_10th/master/data/pdf_index_schema.json
+associated_file: 'data/pdf/Thousand Sons.pdf'
+includes:
+  - 'Horus Heresy Legends -- Adeptus Astartes.yaml'
+includes_allies:
+  - 'Chaos Knights.yaml'
+  - 'Chaos Daemons.yaml'
+army_rule: 1
+detachments:
+  - name: Cult of Magic
+    rule: 2
+    stratagems: [3, 4]
+    enhancements: 5
+armoury_full_pages: null
+armoury_half_pages: null
+datasheets:
+  AHRIMAN: [7, 8]
+  AHRIMAN ON DISC OF TZEENTCH: [9, 10]
+  THOUSAND SONS LAND RAIDER: [11, 12]
+  THOUSAND SONS PREDATOR ANNIHILATOR: [13, 14]
+  THOUSAND SONS PREDATOR DESTRUCTOR: [15, 16]
+  THOUSAND SONS RHINO: [17, 18]
+  THOUSAND SONS CHAOS SPAWN: [19, 20]
+  THOUSAND SONS VINDICATOR: [21, 22]
+  THOUSAND SONS DEFILER: [23, 24]
+  EXALTED SORCERER: [25, 26]
+  EXALTED SORCERER ON DISC OF TZEENTCH: [27, 28]
+  THOUSAND SONS FORGEFIEND: [29, 30]
+  THOUSAND SONS HELBRUTE: [31, 32]
+  THOUSAND SONS HELDRAKE: [33, 34]
+  INFERNAL MASTER: [35, 36]
+  MAGNUS THE RED: [37, 38]
+  THOUSAND SONS MAULERFIEND: [39, 40]
+  MUTALITH VORTEX BEAST: [41, 42]
+  RUBRIC MARINES: [43, 44]
+  SCARAB OCCULT TERMINATORS: [45, 46]
+  THOUSAND SONS SORCERER: [47, 48]
+  THOUSAND SONS SORCERER IN TERMINATOR ARMOUR: [49, 50]
+  THOUSAND SONS CULTISTS: [51, 52]
+  THOUSAND SONS DAEMON PRINCE: [53, 54]
+  THOUSAND SONS DAEMON PRINCE WITH WINGS: [55, 56]
+  TZAANGOR ENLIGHTENED: [57, 58]
+  TZAANGOR SHAMAN: [59, 60]
+  TZAANGORS: [61, 62]
+  TRAITOR ENFORCER: [103, 104]
