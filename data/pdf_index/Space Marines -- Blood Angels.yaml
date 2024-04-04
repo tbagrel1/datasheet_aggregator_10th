@@ -1,0 +1,33 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/tbagrel1/datasheet_aggregator_10th/master/data/pdf_index_schema.json
+associated_file: 'data/pdf/Space Marines -- Blood Angels.pdf'
+includes:
+  - 'Space Marines.yaml'
+includes_allies: []
+army_rule: null
+detachments:
+  - name: Sons of Sanguinius
+    rule: 1
+    stratagems: [3, 4]
+    enhancements: 5
+armoury_full_pages: null
+armoury_half_pages: null
+datasheets:
+  ASTORATH: [7, 8]
+  BAAL PREDATOR: [9, 10]
+  BROTHER CORBULO: [11, 12]
+  CAPTAIN TYCHO: [13, 14]
+  CHIEF LIBRARIAN MEPHISTON: [15, 16]
+  COMMANDER DANTE: [17, 18]
+  DEATH COMPANY DREADNOUGHT: [19, 20]
+  DEATH COMPANY INTERCESSORS: [21, 22]
+  DEATH COMPANY MARINES: [23, 24]
+  DEATH COMPANY MARINES WITH JUMP PACKS: [25, 26]
+  FURIOSO DREADNOUGHT: [27, 28]
+  GABRIEL SETH: [29, 30]
+  LEMARTES: [31, 32]
+  LIBRARIAN DREADNOUGHT: [33, 34]
+  SANGUINARY GUARD: [35, 36]
+  SANGUINARY PRIEST: [37, 38]
+  THE SANGUINOR: [39, 40]
+  TYCHO THE LOST: [41, 42]
+  SANGUINARY PRIEST WITH JUMP PACK: [43, 44]
