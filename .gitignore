@@ -2,6 +2,7 @@
 # Edit at https://www.toptal.com/developers/gitignore?templates=python,visualstudiocode,pycharm,linux,windows
 
 data/pdf/Space Marines.pdf
+data/pdf/Space Marines -- Dark Angels.pdf
 data/pdf_index/transform.py
 
 ### Linux ###

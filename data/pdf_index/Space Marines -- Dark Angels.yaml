@@ -7,26 +7,32 @@ army_rule: null
 detachments:
   - name: Unforgiven Task Force
     rule: 1
-    stratagems: [3, 4]
-    enhancements: 5
+    stratagems: 2
+    enhancements: null
+  - name: Inner Circle Task Force
+    rule: 3
+    stratagems: 4
+    enhancements: null
+  - name: Company of Hunters
+    rule: 5
+    stratagems: 6
+    enhancements: null
 armoury_full_pages: null
 armoury_half_pages: null
 datasheets:
-  AZRAEL: [7, 8]
-  BELIAL: [9, 10]
-  SAMMAEL: [11, 12]
-  EZEKIEL: [13, 14]
-  ASMODAI: [15, 16]
-  RAVENWING TALONMASTER: [17, 18]
-  LAZARUS: [19, 20]
-  DEATHWING STRIKEMASTER: [21, 22]
-  DEATHWING COMMAND SQUAD: [23, 24]
-  DEATHWING TERMINATOR SQUAD: [25, 26]
-  DEATHWING KNIGHTS: [27, 28]
-  RAVENWING COMMAND SQUAD: [29, 30]
-  RAVENWING BLACK KNIGHTS: [31, 32]
-  RAVENWING DARKSHROUD: [33, 34]
-  RAVENWING LAND SPEEDER VENGEANCE: [35, 36]
-  RAVENWING DARK TALON: [37, 38]
-  NEPHILIM JETFIGHTER: [39, 40]
-  LION EL’JONSON: [41, 42]
+  AZRAEL: 9
+  BELIAL: 11
+  SAMMAEL: 13
+  EZEKIEL: 12
+  ASMODAI: 10
+  LAZARUS: 14
+  DEATHWING TERMINATOR SQUAD: 15
+  DEATHWING KNIGHTS: 16
+  RAVENWING COMMAND SQUAD: 17
+  RAVENWING BLACK KNIGHTS: 18
+  RAVENWING DARKSHROUD: 19
+  LAND SPEEDER VENGEANCE: 20
+  RAVENWING DARK TALON: 21
+  NEPHILIM JETFIGHTER: 22
+  LION EL’JONSON: 7
+  INNER CIRCLE COMPANIONS: 8
