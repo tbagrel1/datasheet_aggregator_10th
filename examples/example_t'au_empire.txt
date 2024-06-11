@@ -1,84 +1,126 @@
-1250pts - 10th Sphere of Expansion (1250 points)
+1500pts - Duolol (1500 points)
 T’au Empire
 Strike Force (2000 points)
 Kauyon
 
 
-CHARACTER
+CHARACTERS
 
-Aun’va (65 points)
-  • 1x Aun’va
-    • 1x Close combat weapon
-  • 2x Ethereal Guard
-    • 2x Supreme honour blade
-
-Longstrike (170 points)
+Darkstrider (60 points)
   • Warlord
-  • 1x Armoured hull
-    1x Ion cannon
-    2x Seeker missile
-    2x Twin smart missile system
+  • 1x Close combat weapon
+    1x Shade
+
+Kroot Lone-spear (90 points)
+  • 1x Blast javelin
+    1x Close combat weapon
+    1x Hunting javelin
+    1x Kalamandra’s bite
 
 
 OTHER DATASHEETS
 
-Broadside Battlesuits (330 points)
-  • 1x Broadside Shas’vre
-    • 1x Crushing bulk
-      1x Heavy rail rifle
-      2x Missile Drone
-      1x Seeker missile
-      1x Twin plasma rifle
-  • 2x Broadside Shas’ui
-    • 2x Crushing bulk
-      2x Heavy rail rifle
-      4x Missile Drone
-      2x Seeker missile
-      2x Twin plasma rifle
-
-Ghostkeel Battlesuit (170 points)
+Ghostkeel Battlesuit (160 points)
   • 1x Battlesuit Support System
     1x Cyclic ion raker
     1x Ghostkeel fists
-    1x Twin burst cannon
+    1x Twin fusion blaster
 
-Pathfinder Team (120 points)
+Ghostkeel Battlesuit (160 points)
+  • 1x Battlesuit Support System
+    1x Cyclic ion raker
+    1x Ghostkeel fists
+    1x Twin fusion blaster
+
+Hammerhead Gunship (130 points)
+  • 2x Accelerator burst cannon
+    1x Armoured hull
+    1x Ion cannon
+    2x Seeker missile
+
+Krootox Riders (105 points)
+  • 3x Krootox Rider
+    • 3x Close combat weapon
+      3x Krootox fists
+      3x Repeater cannon
+
+Pathfinder Team (90 points)
   • 1x Pathfinder Shas’ui
     • 1x Close combat weapon
+      2x Gun Drone
       1x Pulse Accelerator Drone
       1x Pulse carbine
       1x Pulse pistol
   • 9x Pathfinder
     • 9x Close combat weapon
-      2x Gun Drone
+      3x Ion rifle
       6x Pulse carbine
       9x Pulse pistol
-      3x Rail rifle
       1x Semi-automatic grenade launcher
 
-Piranha (165 points)
-  • 3x Armoured hull
-    3x Piranha fusion blaster
-    6x Seeker missile
-    6x Twin pulse carbine
+Pathfinder Team (90 points)
+  • 1x Pathfinder Shas’ui
+    • 1x Close combat weapon
+      2x Gun Drone
+      1x Pulse Accelerator Drone
+      1x Pulse carbine
+      1x Pulse pistol
+  • 9x Pathfinder
+    • 9x Close combat weapon
+      3x Ion rifle
+      6x Pulse carbine
+      9x Pulse pistol
+      1x Semi-automatic grenade launcher
 
-Tetras (80 points)
-  • 2x Close combat weapons
-    4x Pulse rifle
+Piranhas (55 points)
+  • 1x Armoured hull
+    1x Piranha fusion blaster
+    2x Seeker missile
+    2x Twin pulse carbine
 
-Vespid Stingwings (75 points)
-  • 1x Vespid Strain Leader
-    • 1x Neutron blaster
-      1x Stingwing claws
-  • 4x Vespid Stingwing
-    • 4x Neutron blaster
-      4x Stingwing claws
+Piranhas (55 points)
+  • 1x Armoured hull
+    1x Piranha fusion blaster
+    2x Seeker missile
+    2x Twin pulse carbine
 
-Vespid Stingwings (75 points)
-  • 1x Vespid Strain Leader
-    • 1x Neutron blaster
-      1x Stingwing claws
-  • 4x Vespid Stingwing
-    • 4x Neutron blaster
-      4x Stingwing claws
+Sky Ray Gunship (140 points)
+  • 1x Armoured hull
+    1x Seeker missile rack
+    2x Smart missile system
+
+Sky Ray Gunship (140 points)
+  • 1x Armoured hull
+    1x Seeker missile rack
+    2x Smart missile system
+
+Stealth Battlesuits (60 points)
+  • 1x Stealth Shas’vre
+    • 1x Battlesuit Support System
+      1x Battlesuit fists
+      1x Burst cannon
+      1x Gun Drone
+      1x Homing Beacon
+      1x Marker Drone
+  • 2x Stealth Shas’ui
+    • 2x Battlesuit fists
+      2x Burst cannon
+
+Stealth Battlesuits (60 points)
+  • 1x Stealth Shas’vre
+    • 1x Battlesuit Support System
+      1x Battlesuit fists
+      1x Burst cannon
+      1x Gun Drone
+      1x Homing Beacon
+      1x Marker Drone
+  • 2x Stealth Shas’ui
+    • 2x Battlesuit fists
+      2x Burst cannon
+
+Tidewall Shieldline (105 points)
+  • 1x Tidewall Defence Platform
+  • 1x Tidewall Shieldline
+
+Exported with App Version: v1.16.0 (44), Data Version: v400
 
